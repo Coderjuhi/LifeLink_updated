@@ -4,7 +4,7 @@ import { Navbar } from './component/Navbar';
 import Home from './component/Home';
 import Signup from './component/Signup';
 import Signin from './component/Signin';
-import Footer from './Footer';
+import Footer from './component/Footer';
 import BloodDonor from './component/Blooddonor';
 import Recipient from './component/Recipient';
 import Hospital from './component/Hospital';

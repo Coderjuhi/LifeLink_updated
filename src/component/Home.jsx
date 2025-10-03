@@ -155,9 +155,9 @@ const Home = () => {
     <div className="flex flex-col sm:flex-row gap-4 justify-center">
     <Link
           to="/signup"
-          className="border border-gray-300 rounded-2xl p-2 text-white bg-red-500 hover:bg-red-600"
+          className="border border-gray-300 rounded-2xl py-2 px-4 text-white bg-red-500 hover:bg-red-600"
         >
-          Join Us
+          Start Donating
         </Link>
       <button className="border border-gray-600 text-gray-600 px-6 py-2 rounded-lg font-medium  hover:scale-105 transition duration-300">
         Partner With Us
