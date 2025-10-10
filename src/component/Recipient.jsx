@@ -130,6 +130,7 @@ function Recipient() {
             location: "Transplant Center",
             date: "2025-07-13",
             donor: "Donor:Living Dono"
+            
         },
 
 
