@@ -36,8 +36,8 @@ function Administrator() {
     ];
     const userDetails = [
         {
-            name: "John Doe",
-            email: "john@example.com",
+            name: "Juhi",
+            email: "juhig@gmail.com",
             role: "Donor",
             bloodType: "O+",
             status: "Active",
@@ -45,8 +45,8 @@ function Administrator() {
             donations: "5",
         },
         {
-            name: "Sarah Miller",
-            email: "sarah@example.com",
+            name: "Saumya",
+            email: "saumya123@gmail.com",
             role: "Recipient",
             bloodType: "A-",
             status: "Active",
@@ -63,7 +63,7 @@ function Administrator() {
             donations: "-",
         },
         {
-            name: "Mike Roberts",
+            name: "Minal",
             email: "mike@example.com",
             role: "Donor",
             bloodType: "B+",

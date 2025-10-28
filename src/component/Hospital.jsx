@@ -74,7 +74,7 @@ function Hospital() {
 
     const DonorData = [
         {
-            id: "John D.",
+            id: "Juhi",
             miles: "0.8 ",
             group: "O-",
             rating: 4.9,
@@ -82,7 +82,7 @@ function Hospital() {
             time: "3 month ago",
         },
         {
-            id: "Sarah M.",
+            id: "Saumya",
             miles: "1.2 ",
             group: "A+",
             rating: 4.8,
@@ -90,7 +90,7 @@ function Hospital() {
             time: "now",
         },
         {
-            id: "Mike R.",
+            id: "Minal",
             miles: "2.1 ",
             group: "B+",
             rating: 5,
