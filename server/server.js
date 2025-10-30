@@ -7,30 +7,37 @@ const authRoutes = require('./routes/auth');
 
 const app = express();
 
-// Middleware
+// Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ✅ CORS FIX (allow methods + headers + credentials)
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
-// ✅ DB Connection
-connectDB();
-
-// Test Route
-app.get("/", (req, res) => {
-  res.send("Server is Running ✅");
+// ✅ Smart CORS setup — allows any origin but supports credentials
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
 });
 
-// ✅ Routes
+// Connect DB
+connectDB();
+
+// Test route
+app.get('/', (req, res) => {
+  res.send(' Server is Running');
+});
+
+// API routes
 app.use('/api', authRoutes);
 
-// Start Server
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

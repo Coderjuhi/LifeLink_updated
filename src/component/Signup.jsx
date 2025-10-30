@@ -16,6 +16,8 @@ export default function Signup({ setUser }) {
   const [showPassword, setShowPassword] = useState(false);
   const [accountType, setAccountType] = useState('');
   const [bloodType, setBloodType] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,20 +31,22 @@ export default function Signup({ setUser }) {
         email,
         password,
         accountType,
-        bloodType
+        bloodType,
+        phone,
+        address
       });
 
       alert("✅ Signup Successful!");
 
       localStorage.setItem("user", JSON.stringify(data.user));
-      setUser(data.user);
+      setUser?.(data.user);
 
-      navigate(accountType === "donor" ? "/blood-donor" :
-        accountType === "recipient" ? "/recipient" :
-        accountType === "hospital" ? "/hospital" :
-        "/admin");
+      // Redirect based on role
+      navigate("/signin");
+
 
     } catch (err) {
+      console.error("Signup error:", err.response?.data || err.message);
       alert(err.response?.data?.message || "Signup failed, try again.");
     }
   };
@@ -62,30 +66,81 @@ export default function Signup({ setUser }) {
           <form onSubmit={handleSubmit} className="space-y-4">
 
             {/* Name */}
-            <input type="text" value={name} onChange={e => setName(e.target.value)} required
-              className="w-full rounded-lg border border-gray-200 px-4 py-1" placeholder="Full Name" />
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+              className="w-full rounded-lg border border-gray-200 px-4 py-1"
+              placeholder="Full Name"
+            />
 
             {/* Email */}
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-              className="w-full rounded-lg border border-gray-200 px-4 py-1" placeholder="Email" />
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              className="w-full rounded-lg border border-gray-200 px-4 py-1"
+              placeholder="Email"
+            />
+
+            {/* Phone */}
+            <input
+              type="text"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              required
+              className="w-full rounded-lg border border-gray-200 px-4 py-1"
+              placeholder="Phone Number"
+            />
+
+            {/* Address */}
+            <input
+              type="text"
+              value={address}
+              onChange={e => setAddress(e.target.value)}
+              required
+              className="w-full rounded-lg border border-gray-200 px-4 py-1"
+              placeholder="Address"
+            />
 
             {/* Password */}
             <div className="relative">
-              <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
-                className="w-full rounded-lg border border-gray-200 px-4 py-1 pr-12" placeholder="Password" />
-              <button type="button" onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                className="w-full rounded-lg border border-gray-200 px-4 py-1 pr-12"
+                placeholder="Password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
                 {showPassword ? <IoEyeOutline /> : <FaRegEyeSlash />}
               </button>
             </div>
 
             {/* Confirm Password */}
-            <input type={showPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required
-              className="w-full rounded-lg border border-gray-200 px-4 py-1" placeholder="Confirm Password" />
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              required
+              className="w-full rounded-lg border border-gray-200 px-4 py-1"
+              placeholder="Confirm Password"
+            />
 
             {/* Account Type */}
-            <select value={accountType} onChange={e => setAccountType(e.target.value)} required
-              className="w-full border border-gray-200 rounded-lg px-4 py-1">
+            <select
+              value={accountType}
+              onChange={e => setAccountType(e.target.value)}
+              required
+              className="w-full border border-gray-200 rounded-lg px-4 py-1"
+            >
               <option value="">Select account type</option>
               <option value="donor">Blood Donor</option>
               <option value="recipient">Recipient</option>
@@ -94,8 +149,12 @@ export default function Signup({ setUser }) {
             </select>
 
             {/* Blood Type */}
-            <select value={bloodType} onChange={e => setBloodType(e.target.value)} required
-              className="w-full border border-gray-200 rounded-lg px-4 py-1">
+            <select
+              value={bloodType}
+              onChange={e => setBloodType(e.target.value)}
+              required
+              className="w-full border border-gray-200 rounded-lg px-4 py-1"
+            >
               <option value="">Select blood type</option>
               <option value="A+">A+</option><option value="A-">A-</option>
               <option value="B+">B+</option><option value="B-">B-</option>
@@ -104,15 +163,20 @@ export default function Signup({ setUser }) {
             </select>
 
             {/* Submit */}
-            <button type="submit" className="w-full bg-purple-800 hover:bg-purple-900 text-white rounded-lg py-3 font-medium">
+            <button
+              type="submit"
+              className="w-full bg-purple-800 hover:bg-purple-900 text-white rounded-lg py-3 font-medium"
+            >
               Create Account
             </button>
           </form>
 
           <div className="mt-4 text-center text-sm text-gray-600">
-            <p>Already have an account? <Link to="/signin" className="text-purple-600 underline">Sign in</Link></p>
+            <p>
+              Already have an account?{' '}
+              <Link to="/signin" className="text-purple-600 underline">Sign in</Link>
+            </p>
           </div>
-
         </div>
       </div>
     </div>

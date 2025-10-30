@@ -3,7 +3,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret';
 
 module.exports = (req, res, next) => {
   try {
-    // prefer cookie first, fallback to Authorization header
     const token = req.cookies?.token || req.header('Authorization')?.replace('Bearer ', '');
     if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
 

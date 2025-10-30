@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d'; // eg '7d' or '1h'
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 function createToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
@@ -29,22 +29,28 @@ exports.signup = async (req, res) => {
       name, email, password: hashed, accountType, bloodType, phone, address
     });
 
-    await user.save();
+    const savedUser = await user.save();
 
-    const token = createToken({ id: user._id, email: user.email });
+    const token = createToken({ id: savedUser._id, email: savedUser.email });
 
     // Set httpOnly cookie
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // set true on HTTPS
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
     });
 
     return res.status(201).json({
       message: 'User created successfully',
-      user: { id: user._id, name: user.name, email: user.email, accountType: user.accountType },
-      token // optional for clients that prefer header-based auth
+      user: {
+        id: savedUser._id,
+        name: savedUser.name,
+        email: savedUser.email,
+        accountType: savedUser.accountType,
+        bloodType: savedUser.bloodType || null
+      },
+      token
     });
   } catch (err) {
     console.error('Signup error:', err);
@@ -85,7 +91,6 @@ exports.login = async (req, res) => {
 
 exports.me = async (req, res) => {
   try {
-    // authMiddleware attaches req.userId
     const user = await User.findById(req.userId).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json({ user });
