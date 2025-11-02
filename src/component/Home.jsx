@@ -35,7 +35,7 @@ const Home = () => {
 
         <>
 
-            <section className="w-full bg-red-50 mt-12">
+            <section className="w-full bg-red-50 h-full">
                 <div className="max-w-6xl mx-auto text-center px-6 py-12 min-h-[60vh]">
                     {/* Tagline */}
                     <div className="inline-block bg-gray-100 rounded-2xl px-3 py-1 mt-5">
@@ -61,7 +61,7 @@ const Home = () => {
                     <div className="flex justify-center gap-4">
                         <Link
                             to="/signup"
-                            className="px-6 py-3 bg-pink-600 text-white font-medium rounded-lg hover:bg-pink-700 transition inline-flex items-center"
+                            className="px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition inline-flex items-center"
                         >
                             <FaRegHeart className="text-white mr-2" />
                             Become a Donor
@@ -172,7 +172,7 @@ const Home = () => {
 
             <div className="max-w-10xl mx-auto p-3.5">
 
-                <section className="py-16 bg-gray-50 rounded-1xl  overflow-hidden flex flex-col md:flex-row items-center min-h-[80vh] shadow-md">                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <section className="py-16 bg-gray-50 rounded-1xl  overflow-hidden flex flex-col md:flex-row items-center min-h-[80vh]">                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                             Why Choose LifeLink?
@@ -218,7 +218,7 @@ const Home = () => {
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link
                             to="/signup"
-                            className="border border-gray-300 rounded-2xl py-2 px-4 text-white bg-red-500 hover:bg-red-600"
+                            className="border border-gray-300 rounded-2xl py-2 px-4 text-white bg-red-600 hover:bg-red-700"
                         >
                             Start Donating
                         </Link>

@@ -52,7 +52,7 @@ export default function Signup({ setUser }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-pink-50 to-pink-100 flex items-start pt-17 justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-r from-pink-50 to-pink-100 flex items-start  justify-center p-6 pt-24">
       <div className="w-full max-w-md bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-pink-200">
         <div className="p-8">
           <div className="flex flex-col items-center gap-3 mb-4">
