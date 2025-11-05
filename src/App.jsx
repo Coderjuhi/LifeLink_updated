@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Navbar from "./component/Navbar";
 import Home from "./component/Home";
@@ -14,13 +14,27 @@ import About from "./component/About";
 import Contact from "./component/Contact";
 import { Outlet } from "react-router-dom";
 
-// Layouts
+// ✅ Protected Route Component
+const ProtectedRoute = ({ user, allowedRoles, children }) => {
+  if (!user) {
+    // Redirect unauthenticated users to Signin
+    return <Navigate to="/signin" replace />;
+  }
+
+  // Optional: Role-based restriction
+  if (allowedRoles && !allowedRoles.includes(user.accountType)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+// ✅ Layouts
 const MainLayout = ({ user, setUser }) => (
   <>
     <Navbar user={user} setUser={setUser} />
-    <main className="">
-      
-    <Outlet />
+    <main>
+      <Outlet />
     </main>
     <Footer />
   </>
@@ -35,6 +49,7 @@ const NavbarLayout = ({ user, setUser }) => (
 
 const BlankLayout = () => <Outlet />;
 
+// ✅ App Component
 function App() {
   const [user, setUser] = useState(null);
 
@@ -64,12 +79,40 @@ function App() {
           <Route path="/signin" element={<Signin setUser={setUser} />} />
         </Route>
 
-        {/* ✅ Blank Layout */}
+        {/* ✅ Protected Routes (Require Login) */}
         <Route element={<BlankLayout />}>
-          <Route path="/blood-donor" element={<BloodDonor />} />
-          <Route path="/recipient" element={<Recipient />} />
-          <Route path="/hospital" element={<Hospital />} />
-          <Route path="/admin" element={<Administrator />} />
+          <Route
+            path="/blood-donor"
+            element={
+              <ProtectedRoute user={user}>
+                <BloodDonor user={user} setUser={setUser} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recipient"
+            element={
+              <ProtectedRoute user={user}>
+                <Recipient />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hospital"
+            element={
+              <ProtectedRoute user={user} allowedRoles={["hospital", "admin"]}>
+                <Hospital />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute user={user} allowedRoles={["admin"]}>
+                <Administrator />
+              </ProtectedRoute>
+            }
+          />
         </Route>
       </Routes>
     </Router>

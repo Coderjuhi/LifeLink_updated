@@ -1,4 +1,3 @@
-// File: ./component/Signup/Signup.jsx
 import React, { useState } from 'react';
 import { BiSolidHeartCircle } from 'react-icons/bi';
 import { FaRegEyeSlash } from "react-icons/fa";
@@ -9,18 +8,31 @@ import API from '../api/api';
 export default function Signup({ setUser }) {
   const navigate = useNavigate();
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    password: '',
+    confirmPassword: '',
+    accountType: '',
+    bloodType: 'Not Applicable'
+  });
   const [showPassword, setShowPassword] = useState(false);
-  const [accountType, setAccountType] = useState('');
-  const [bloodType, setBloodType] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({
+      ...prev,
+      [name]: value,
+      ...(name === 'accountType' && value !== 'donor' ? { bloodType: 'Not Applicable' } : {})
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const { name, email, phone, address, password, confirmPassword, accountType, bloodType } = form;
 
     if (password.length < 6) return alert('Password must be at least 6 characters');
     if (password !== confirmPassword) return alert('Passwords do not match');
@@ -29,21 +41,16 @@ export default function Signup({ setUser }) {
       const { data } = await API.post("/signup", {
         name,
         email,
+        phone,
+        address,
         password,
         accountType,
-        bloodType,
-        phone,
-        address
+        bloodType
       });
 
       alert("Signup Successful!");
-
-      localStorage.setItem("user", JSON.stringify(data.user));
       setUser?.(data.user);
-
-      // Redirect based on role
       navigate("/signin");
-
 
     } catch (err) {
       console.error("Signup error:", err.response?.data || err.message);
@@ -52,7 +59,7 @@ export default function Signup({ setUser }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-pink-50 to-pink-100 flex items-start  justify-center p-6 pt-24">
+    <div className="min-h-screen bg-gradient-to-r from-pink-50 to-pink-100 flex items-start justify-center p-6 pt-24">
       <div className="w-full max-w-md bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-pink-200">
         <div className="p-8">
           <div className="flex flex-col items-center gap-3 mb-4">
@@ -64,12 +71,12 @@ export default function Signup({ setUser }) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-
             {/* Name */}
             <input
               type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
+              name="name"
+              value={form.name}
+              onChange={handleChange}
               required
               className="w-full rounded-lg border border-gray-200 px-4 py-1"
               placeholder="Full Name"
@@ -78,8 +85,9 @@ export default function Signup({ setUser }) {
             {/* Email */}
             <input
               type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              name="email"
+              value={form.email}
+              onChange={handleChange}
               required
               className="w-full rounded-lg border border-gray-200 px-4 py-1"
               placeholder="Email"
@@ -88,8 +96,9 @@ export default function Signup({ setUser }) {
             {/* Phone */}
             <input
               type="text"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
               required
               className="w-full rounded-lg border border-gray-200 px-4 py-1"
               placeholder="Phone Number"
@@ -98,8 +107,9 @@ export default function Signup({ setUser }) {
             {/* Address */}
             <input
               type="text"
-              value={address}
-              onChange={e => setAddress(e.target.value)}
+              name="address"
+              value={form.address}
+              onChange={handleChange}
               required
               className="w-full rounded-lg border border-gray-200 px-4 py-1"
               placeholder="Address"
@@ -109,8 +119,9 @@ export default function Signup({ setUser }) {
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
+                name="password"
+                value={form.password}
+                onChange={handleChange}
                 required
                 className="w-full rounded-lg border border-gray-200 px-4 py-1 pr-12"
                 placeholder="Password"
@@ -127,8 +138,9 @@ export default function Signup({ setUser }) {
             {/* Confirm Password */}
             <input
               type={showPassword ? 'text' : 'password'}
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
+              name="confirmPassword"
+              value={form.confirmPassword}
+              onChange={handleChange}
               required
               className="w-full rounded-lg border border-gray-200 px-4 py-1"
               placeholder="Confirm Password"
@@ -136,31 +148,42 @@ export default function Signup({ setUser }) {
 
             {/* Account Type */}
             <select
-              value={accountType}
-              onChange={e => setAccountType(e.target.value)}
+              name="accountType"
+              value={form.accountType}
+              onChange={handleChange}
               required
               className="w-full border border-gray-200 rounded-lg px-4 py-1"
             >
               <option value="">Select account type</option>
-              <option value="donor">Blood Donor</option>
+              <option value="donor">Donor</option>
               <option value="recipient">Recipient</option>
               <option value="hospital">Hospital</option>
               <option value="admin">Admin</option>
             </select>
 
-            {/* Blood Type */}
-            <select
-              value={bloodType}
-              onChange={e => setBloodType(e.target.value)}
-              required
-              className="w-full border border-gray-200 rounded-lg px-4 py-1"
-            >
-              <option value="">Select blood type</option>
-              <option value="A+">A+</option><option value="A-">A-</option>
-              <option value="B+">B+</option><option value="B-">B-</option>
-              <option value="O+">O+</option><option value="O-">O-</option>
-              <option value="AB+">AB+</option><option value="AB-">AB-</option>
-            </select>
+            {/* Blood Type (Visible only if donor) */}
+            {form.accountType === 'donor' ? (
+              <select
+                name="bloodType"
+                value={form.bloodType}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-200 rounded-lg px-4 py-1"
+              >
+                <option value="">Select blood type</option>
+                <option value="A+">A+</option><option value="A-">A-</option>
+                <option value="B+">B+</option><option value="B-">B-</option>
+                <option value="O+">O+</option><option value="O-">O-</option>
+                <option value="AB+">AB+</option><option value="AB-">AB-</option>
+              </select>
+            ) : (
+              <input
+                type="text"
+                value="Not Applicable"
+                disabled
+                className="w-full border border-gray-200 rounded-lg px-4 py-1 bg-gray-100 text-gray-500"
+              />
+            )}
 
             {/* Submit */}
             <button
@@ -173,7 +196,7 @@ export default function Signup({ setUser }) {
 
           <div className="mt-4 text-center text-sm text-gray-600">
             <p>
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Link to="/signin" className="text-purple-600 underline">Sign in</Link>
             </p>
           </div>
