@@ -1,42 +1,27 @@
-import React, { useState } from 'react'
-import { BiSolidHeartCircle } from 'react-icons/bi'
-import { Link } from 'react-router';
-import { AlertTriangle, Activity, Settings, Bell, Building2, Dot, MapPin, Calendar, Zap, Heart, UsersRound, Award, Phone, Clock, Star, Shield, Search, Funnel, Users, Droplet } from "lucide-react";
-import { FaArrowRightFromBracket } from "react-icons/fa6";
-import { FaPlus } from "react-icons/fa6";
+import { useState } from "react"
+import {
+    AlertTriangle,
+    Activity,
+    Settings,
+    Bell,
+    Heart,
+    Clock,
+    Star,
+    Shield,
+    Search,
+    Filter,
+    Plus,
+    ChevronRight,
+} from "lucide-react"
+import { FaArrowRightFromBracket } from "react-icons/fa6"
 
+// Removed invalid Tailwind classes with dynamic colors
 
+export default function HospitalDashboard() {
+    const [activeTab, setActiveTab] = useState("overview")
 
-function Hospital() {
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case "Critical":
-                return "border-red-500 bg-red-50 text-red-600";
-            case "High":
-                return "border-pink-500 bg-pink-50 text-pink-600";
-            case "Medium":
-                return "border-blue-500 bg-blue-50 text-blue-600";
-            default:
-                return "border-gray-500 bg-gray-50 text-gray-600";
-        }
-    };
-
-    const getStateColor = (state) => {
-        switch (state) {
-            case "Active":
-                return "border-green-500 bg-green-50 text-green-600";
-            case "Matching":
-                return "border-yellow-500 bg-yellow-50 text-yellow-600";
-            case "Scheduled":
-                return "border-purple-500 bg-purple-50 text-purple-600";
-            default:
-                return "border-gray-500 bg-gray-50 text-gray-600";
-        }
-    };
-
-    // Dummy Data Example
-    const ActiveData = [
+    // Mock data
+    const activeRequests = [
         {
             id: "P-2024-001",
             urgency: "Critical",
@@ -70,406 +55,279 @@ function Hospital() {
             time: "3 hours ago",
             state: "Scheduled",
         },
-    ];
+    ]
 
-    const DonorData = [
-        {
-            id: "Juhi",
-            miles: "0.8 ",
-            group: "O-",
-            rating: 4.9,
-            responses: "now",
-            time: "3 month ago",
-        },
-        {
-            id: "Saumya",
-            miles: "1.2 ",
-            group: "A+",
-            rating: 4.8,
-            responses: 5,
-            time: "now",
-        },
-        {
-            id: "Minal",
-            miles: "2.1 ",
-            group: "B+",
-            rating: 5,
-            responses: 3,
-            time: "in 30 min",
-        },
-    ];
+    const donors = [
+        { id: "Juhi", miles: "0.8", group: "O-", rating: 4.9, available: true, time: "3 months ago" },
+        { id: "Saumya", miles: "1.2", group: "A+", rating: 4.8, available: true, time: "now" },
+        { id: "Minal", miles: "2.1", group: "B+", rating: 5, available: false, time: "in 30 min" },
+    ]
 
+    const bloodInventory = [
+        { group: "B+", current: 45, min: 20, max: 100, status: "Good", percent: 80 },
+        { group: "A-", current: 12, min: 15, max: 80, status: "Low", percent: 30 },
+        { group: "B+", current: 6, min: 20, max: 60, status: "Critical", percent: 10 },
+        { group: "AB+", current: 25, min: 10, max: 70, status: "Normal", percent: 50 },
+        { group: "O+", current: 45, min: 20, max: 100, status: "Good", percent: 80 },
+        { group: "A+", current: 12, min: 15, max: 80, status: "Low", percent: 30 },
+        { group: "B-", current: 6, min: 20, max: 60, status: "Critical", percent: 10 },
+        { group: "O-", current: 25, min: 10, max: 70, status: "Normal", percent: 50 },
+    ]
 
+    const getStatusStyles = (status) => {
+        switch (status) {
+            case "Critical":
+                return "bg-red-50 border-red-200 text-red-700"
+            case "High":
+                return "bg-orange-50 border-orange-200 text-orange-700"
+            case "Medium":
+                return "bg-blue-50 border-blue-200 text-blue-700"
+            default:
+                return "bg-gray-50 border-gray-200 text-gray-700"
+        }
+    }
 
-    const bloodData = [
-        {
-            group: "B+",
-            current: 45,
-            min: 20,
-            max: 100,
-            status: "Good",
-            Color: "purple",
-            statusColor: "purple",
-            percent: 80, // for bar width
-        },
-        {
-            group: "A-",
-            current: 12,
-            min: 15,
-            max: 80,
-            status: "Low",
-            Color: "yellow",
-            statusColor: "purple",
-            percent: 30,
-        },
-        {
-            group: "B+",
-            current: 6,
-            min: 20,
-            max: 60,
-            status: "Critical",
-            Color: "red",
-            statusColor: "purple",
-            percent: 10,
-        },
-        {
-            group: "AB+",
-            current: 25,
-            min: 10,
-            max: 70,
-            status: "Normal",
-            Color: "green",
-            statusColor: "purple",
-            percent: 50,
-        },
-        {
-            group: "O+",
-            current: 45,
-            min: 20,
-            max: 100,
-            status: "Good",
-            Color: "purple",
-            statusColor: "purple",
-            percent: 80, // for bar width
-        },
-        {
-            group: "A+",
-            current: 12,
-            min: 15,
-            max: 80,
-            status: "Low",
-            Color: "yellow",
-            statusColor: "purple",
-            percent: 30,
-        },
-        {
-            group: "B+",
-            current: 6,
-            min: 20,
-            max: 60,
-            status: "Critical",
-            Color: "red",
-            statusColor: "purple",
-            percent: 10,
-        },
-        {
-            group: "O+",
-            current: 25,
-            min: 10,
-            max: 70,
-            status: "Normal",
-            Color: "green",
-            statusColor: "purple",
-            percent: 50,
-        },
-    ];
+    const getInventoryStatus = (status) => {
+        switch (status) {
+            case "Critical":
+                return "bg-red-100 text-red-700"
+            case "Low":
+                return "bg-yellow-100 text-yellow-700"
+            case "Good":
+                return "bg-emerald-100 text-emerald-700"
+            default:
+                return "bg-blue-100 text-blue-700"
+        }
+    }
 
-
-
-    const [activeTab, setActiveTab] = useState("overview");
+    const getProgressColor = (status) => {
+        switch (status) {
+            case "Critical":
+                return "bg-red-500"
+            case "Low":
+                return "bg-yellow-500"
+            case "Good":
+                return "bg-emerald-500"
+            default:
+                return "bg-blue-500"
+        }
+    }
 
     return (
-        <>
-            <nav className="fixed top-0 left-0 w-full h-[65px] bg-white text-black z-50 border-b border-gray-200 flex justify-between items-center px-4 md:px-8">
-                {/* Brand */}
-                <div className="flex items-center text-lg md:text-2xl font-bold text-black">
-                    <BiSolidHeartCircle size={28} className="text-purple-800 mr-2" />
-                    LifeLink
-                </div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 pt-12">
+            {/* Navigation */}
+            <nav className="fixed top-0 left-0 w-full h-16 bg-white/95 backdrop-blur-md text-gray-900 z-50 border-b border-gray-100 shadow-sm">
+                <div className="max-w-7xl mx-auto h-full px-4 md:px-6 flex justify-between items-center">
+                    {/* Brand */}
+                    <div className="flex items-center gap-2 text-xl font-bold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+                            <Heart size={24} className="text-white" />
+                        </div>
+                        <span className="hidden sm:inline text-gray-900">LifeLink</span>
+                    </div>
 
-                {/* Dashboard Text */}
-                <div className="hidden md:flex flex-col items-center space-y-1">
-                    <h1 className="font-medium text-xl text-black">Hospital Dashboard</h1>
-                    <p className="text-gray-600 text-sm">Welcome back</p>
-                </div>
+                    {/* Center Title */}
+                    <div className="hidden md:flex flex-col items-center">
+                        <h1 className="font-semibold text-gray-900">Hospital Dashboard</h1>
+                        <p className="text-xs text-gray-500">Welcome back</p>
+                    </div>
 
-                {/* Right Side */}
-                <div className="flex items-center space-x-3 md:space-x-6">
-                    <Link to="/home" className="text-black hover:text-purple-800">
-                        <Bell size={20} />
-                    </Link>
-                    <Link to="/home" className="text-black hover:text-purple-800">
-                        <Settings size={20} />
-                    </Link>
-                    <Link to="/" className="hidden sm:block text-black hover:text-purple-800">
-                        Home
-                    </Link>
-                    <Link
-                        to="/signup"
-                        className="border flex items-center border-gray-300 rounded-2xl px-2 py-1 text-red-500 hover:text-red-600 text-sm md:text-base"
-                    >
-                        <FaArrowRightFromBracket className="mr-1 md:mr-2" />
-                        LogOut
-                    </Link>
-                    <button
-                        className="border border-gray-300 rounded-2xl px-2 py-1  text-purple-800 hover:text-purple-9500 flex items-center text-xs"
-                    ><Building2 size={18} className="text-purple-900 mr-2" />Hospital
-                    </button>
+                    {/* Right Actions */}
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <Bell size={20} className="text-gray-600" />
+                        </button>
+                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <Settings size={20} className="text-gray-600" />
+                        </button>
+                        <button onClick={() => handleLogout()} className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-500 hover:text-white rounded-lg transition-colors font-medium text-sm">
+                            <FaArrowRightFromBracket size={16} />
+                            Logout
+                        </button>
+                        {/* <button
+                            onClick={() => setIsAvailable(!isAvailable)}
+                            className={`px-4 py-1.5 rounded-full font-semibold text-sm transition-all duration-200 text-white ${isAvailable ? "bg-emerald-500 hover:bg-emerald-600" : "bg-gray-400 hover:bg-gray-500"}`}
+                        >
+                            {isAvailable ? "Available" : "Unavailable"}
+                        </button> */}
+                    </div>
                 </div>
             </nav>
 
-
-
-
-            <div className="mt-[80px] p-4 md:p-6 lg:p-8">
+            {/* Main Content */}
+            <div className="max-w-7xl mx-auto px-6 py-8">
                 {/* Tabs */}
-                <div className="flex border rounded-2xl border-gray-300 mb-6 overflow-hidden">
-                    <button
-                        className={`flex-1 py-2 text-center font-medium rounded-2xl ${activeTab === "overview"
-                            ? "bg-gray-200 text-black"
-                            : "bg-white hover:text-black"
-                            }`}
-                        onClick={() => setActiveTab("overview")}
-                    >
-                        Overview
-                    </button>
-                    <button
-                        className={`flex-1 py-2 text-center font-medium rounded-2xl ${activeTab === "inventory"
-                            ? "bg-gray-200 text-black"
-                            : "bg-white hover:text-black"
-                            }`}
-                        onClick={() => setActiveTab("inventory")}
-                    >
-                        Blood Inventory
-                    </button>
-                    <button
-                        className={`flex-1 py-2 text-center font-medium rounded-2xl ${activeTab === "requests"
-                            ? "bg-gray-200 text-black"
-                            : "bg-white hover:text-black"
-                            }`}
-                        onClick={() => setActiveTab("requests")}
-                    >
-                        Active Requests
-                    </button>
-                    <button
-                        className={`flex-1 py-2 text-center font-medium rounded-2xl ${activeTab === "donors"
-                            ? "bg-gray-200 text-black"
-                            : "bg-white hover:text-black"
-                            }`}
-                        onClick={() => setActiveTab("donors")}
-                    >
-                        Donor Network
-                    </button>
+                <div className="flex gap-2 mb-8 border-b border-slate-200">
+                    {["Overview", "Inventory", "Requests", "Donors"].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab.toLowerCase())}
+                            className={`px-4 py-3 font-medium border-b-2 transition ${activeTab === tab.toLowerCase()
+                                    ? "border-red-600 text-red-600"
+                                    : "border-transparent text-slate-600 hover:text-slate-900"
+                                }`}
+                        >
+                            {tab}
+                        </button>
+                    ))}
                 </div>
 
-                {/* Content below buttons */}
+                {/* Overview Tab */}
                 {activeTab === "overview" && (
-                    <div className=" rounded-xl  ">
-                        {/* Overview content */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            {/* Active Requests */}
-                            <div className="bg-white p-12 rounded-xl  shadow-sm flex items-center justify-between">
-                                {/* Left content */}
-                                <div>
-                                    <p className="text-gray-600 text-sm">Active Requests</p>
-                                    <p className="text-red-500 text-2xl font-extrabold">12</p>
-                                </div>
-                                {/* Right icon */}
-                                <div className="flex items-center">
-                                    <AlertTriangle className="text-red-500 text-3xl" />
+                    <div className="space-y-8">
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-slate-600 text-sm font-medium">Active Requests</p>
+                                        <p className="text-3xl font-bold text-red-600 mt-2">12</p>
+                                    </div>
+                                    <AlertTriangle className="text-red-500" size={32} />
                                 </div>
                             </div>
 
-                            {/* Available Donors */}
-                            <div className="bg-white p-12 rounded-xl  shadow-sm flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm">Available Donors</p>
-                                    <p className="text-green-600 text-2xl font-extrabold">47</p>
-                                </div>
-                                <div className="flex items-center">
-                                    <Users className="text-green-600 text-3xl" />
-                                </div>
-                            </div>
-
-                            {/* Blood Units */}
-                            <div className="bg-white p-12 rounded-xl shadow-sm flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm">Blood Units</p>
-                                    <p className="text-purple-700 text-2xl font-extrabold">153</p>
-                                </div>
-                                <div className="flex items-center">
-                                    <Heart className="text-purple-700 text-3xl" />
+                            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-slate-600 text-sm font-medium">Available Donors</p>
+                                        <p className="text-3xl font-bold text-emerald-600 mt-2">47</p>
+                                    </div>
+                                    <Shield className="text-emerald-500" size={32} />
                                 </div>
                             </div>
 
-                            {/* Response Time */}
-                            <div className="bg-white p-12 rounded-xl  shadow-sm flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm">Response Time</p>
-                                    <p className="text-teal-600 text-2xl font-extrabold">8m</p>
+                            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-slate-600 text-sm font-medium">Blood Units</p>
+                                        <p className="text-3xl font-bold text-purple-600 mt-2">153</p>
+                                    </div>
+                                    <Heart className="text-purple-500" size={32} />
                                 </div>
-                                <div className="flex items-center">
-                                    <Clock className="text-teal-600 text-3xl" />
+                            </div>
+
+                            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-slate-600 text-sm font-medium">Response Time</p>
+                                        <p className="text-3xl font-bold text-teal-600 mt-2">8m</p>
+                                    </div>
+                                    <Clock className="text-teal-500" size={32} />
                                 </div>
                             </div>
                         </div>
 
+                        {/* Alerts and Activity */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-6">
+                                    <AlertTriangle size={20} className="text-red-500" />
+                                    Critical Alerts
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <p className="font-semibold text-red-900">A- Blood Critical</p>
+                                            <span className="text-xs bg-red-600 text-white px-3 py-1 rounded-full">Critical</span>
+                                        </div>
+                                        <p className="text-sm text-red-700 mb-3">Only 8 units remaining (minimum: 10)</p>
+                                        <button className="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg transition">
+                                            Request Emergency Supply
+                                        </button>
+                                    </div>
 
-                        {/* Alerts + Activity */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Critical Alerts */}
-                            <div className="bg-white p-5 rounded-xl shadow-lg border border-gray-200">
-                                <h2 className="text-red-600 font-semibold flex items-center gap-2 mb-4">
-                                    <AlertTriangle className="text-red-600" /> Critical Alerts
-                                </h2>
-
-                                {/* Critical Alert */}
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3 relative">
-                                    {/* Badge top-right */}
-                                    <span className="absolute top-2 right-2 text-xs text-white bg-red-500 px-2 py-0.5 rounded-full">
-                                        Critical
-                                    </span>
-
-                                    {/* Content */}
-                                    <p className="font-medium text-red-700">A- Blood Critical</p>
-                                    <p className="text-sm text-gray-600">
-                                        Only 8 units remaining (minimum: 10)
-                                    </p>
-                                    <button className="mt-2 px-3 py-1 text-white bg-pink-600 rounded-full text-sm">
-                                        Request Emergency Supply
-                                    </button>
+                                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <p className="font-semibold text-yellow-900">O- Blood Low</p>
+                                            <span className="text-xs bg-yellow-600 text-white px-3 py-1 rounded-full">Low</span>
+                                        </div>
+                                        <p className="text-sm text-yellow-700 mb-3">12 units remaining (minimum: 15)</p>
+                                        <button className="border border-yellow-300 hover:bg-yellow-100 text-yellow-700 text-sm px-4 py-2 rounded-lg transition">
+                                            Find Donors
+                                        </button>
+                                    </div>
                                 </div>
-
-                                {/* Low Alert */}
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 relative">
-                                    {/* Badge top-right */}
-                                    <span className="absolute top-2 right-2 text-xs text-white bg-pink-500 px-2 py-0.5 rounded-full">
-                                        Low
-                                    </span>
-
-                                    {/* Content */}
-                                    <p className="font-medium text-red-700">O- Blood Low</p>
-                                    <p className="text-sm text-gray-600">
-                                        12 units remaining (minimum: 15)
-                                    </p>
-                                    <button className="mt-2 px-3 py-1 hover:bg-pink-600 hover:text-white border border-gray-300 rounded-full text-sm">
-                                        Find Donors
-                                    </button>
-                                </div>
-
                             </div>
 
-                            {/* Recent Activity */}
-                            <div className="bg-white p-5 rounded-xl border shadow-lg border-gray-200">
-                                <h2 className="font-semibold text-gray-800 mb-4 flex items-center"><Activity className='text-purple-800 mr-3' />Recent Activity</h2>
-
-                                <div className="flex justify-between items-center py-2">
-                                    <div>
-                                        <p className="text-green-700 text-sm flex items-center">
-                                            <Dot size={32} className="text-green-600 " />
-                                            Received 3 units of O+
-                                        </p>
-                                        <p className="text-xs text-gray-500 ml-8">2024-01-20 at 14:30</p>
+                            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-6">
+                                    <Activity size={20} className="text-purple-500" />
+                                    Recent Activity
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-start justify-between pb-4 border-b border-slate-200">
+                                        <div>
+                                            <p className="text-sm text-emerald-700 font-medium">Received 3 units of O+</p>
+                                            <p className="text-xs text-slate-500 mt-1">2024-01-20 at 14:30</p>
+                                        </div>
+                                        <span className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full">Completed</span>
                                     </div>
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                                        Completed
-                                    </span>
-                                </div>
 
-
-                                <div className="flex justify-between items-center  py-2">
-                                    <div>
-                                        <p className="text-purple-700 text-sm flex items-center">
-                                            <Dot size={32} className=" text-puple-700" />
-
-                                            Distributed 2 units of A-
-                                        </p>
-                                        <p className="text-xs text-gray-500 ml-8">2024-01-20 at 12:15</p>
+                                    <div className="flex items-start justify-between pb-4 border-b border-slate-200">
+                                        <div>
+                                            <p className="text-sm text-purple-700 font-medium">Distributed 2 units of A-</p>
+                                            <p className="text-xs text-slate-500 mt-1">2024-01-20 at 12:15</p>
+                                        </div>
+                                        <span className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full">Completed</span>
                                     </div>
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                                        Completed
-                                    </span>
-                                </div>
 
-                                <div className="flex justify-between items-center py-2">
-                                    <div>
-                                        <p className="text-blue-700 text-sm flex items-center">
-                                            <Dot size={32} className=" text-puple-700" />
-
-                                            Received 1 unit of B+
-                                        </p>
-                                        <p className="text-xs text-gray-500 ml-8">2024-01-19 at 16:45</p>
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <p className="text-sm text-blue-700 font-medium">Received 1 unit of B+</p>
+                                            <p className="text-xs text-slate-500 mt-1">2024-01-19 at 16:45</p>
+                                        </div>
+                                        <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full">Processing</span>
                                     </div>
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
-                                        Processing
-                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 )}
 
+                {/* Inventory Tab */}
                 {activeTab === "inventory" && (
                     <div>
-                        {/* Header */}
                         <div className="flex items-center justify-between mb-6">
                             <div>
-                                <h2 className="text-2xl font-bold">Blood Inventory</h2>
-                                <p className="text-gray-600 text-base">
-                                    Current Blood bank status and levels
-                                </p>
+                                <h2 className="text-2xl font-bold text-slate-900">Blood Inventory</h2>
+                                <p className="text-slate-600 text-sm mt-1">Current blood bank status and levels</p>
                             </div>
-                            <button className="bg-purple-900 text-white px-3 py-2 rounded-2xl flex items-center gap-2 hover:bg-purple-800 transition">
-                                <FaPlus className="text-white" />
+                            <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                                <Plus size={18} />
                                 Add Inventory
                             </button>
                         </div>
 
-                        {/* Cards Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {bloodData.map((blood, index) => (
+                            {bloodInventory.map((blood, index) => (
                                 <div
                                     key={index}
-                                    className="border border-gray-200 shadow bg-white rounded-xl py-8 px-4 flex flex-col gap-4"
+                                    className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition"
                                 >
-                                    {/* Header */}
-                                    <div className="flex items-center justify-between mb-6">
-                                        <div className="font-semibold text-2xl">{blood.group}</div>
-                                        <button
-                                            className={`border border-${blood.Color}-500 bg-${blood.Color}-50 text-${blood.Color}-600 rounded-2xl px-3 py-1 text-sm`}
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-2xl font-bold text-slate-900">{blood.group}</span>
+                                        <span
+                                            className={`text-xs font-semibold px-3 py-1 rounded-full ${getInventoryStatus(blood.status)}`}
                                         >
                                             {blood.status}
-                                        </button>
+                                        </span>
                                     </div>
 
-                                    {/* Body */}
                                     <div>
-                                        <div className="flex justify-between text-sm mb-4">
-                                            <span>Current</span>
-                                            <span className="font-medium">{blood.current} Units</span>
+                                        <div className="flex justify-between text-sm mb-2">
+                                            <span className="text-slate-600">Current</span>
+                                            <span className="font-semibold text-slate-900">{blood.current} Units</span>
                                         </div>
 
-                                        {/* Progress Bar */}
-                                        <div className="w-full h-2 bg-gray-200 rounded-full">
+                                        <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
                                             <div
-                                                className={`h-2 bg-${blood.statusColor}-600 rounded-full`}
+                                                className={`h-full ${getProgressColor(blood.status)}`}
                                                 style={{ width: `${blood.percent}%` }}
                                             ></div>
                                         </div>
 
-                                        {/* Min & Max */}
-                                        <div className="flex justify-between text-xs text-gray-400">
+                                        <div className="flex justify-between text-xs text-slate-500">
                                             <p>Min: {blood.min}</p>
                                             <p>Max: {blood.max}</p>
                                         </div>
@@ -477,196 +335,145 @@ function Hospital() {
                                 </div>
                             ))}
                         </div>
-
-
                     </div>
-
                 )}
 
-
-
-
-
-
-
-
+                {/* Requests Tab */}
                 {activeTab === "requests" && (
                     <div>
-                        {/* Header */}
                         <div className="flex items-center justify-between mb-6">
                             <div>
-                                <h2 className="text-2xl font-bold">Active Requests</h2>
-                                <p className="text-gray-600 text-base">
-                                    Manage blood donation requests</p>
+                                <h2 className="text-2xl font-bold text-slate-900">Active Requests</h2>
+                                <p className="text-slate-600 text-sm mt-1">Manage blood donation requests</p>
                             </div>
-                            <button className="bg-red-500 text-white px-3 py-2 rounded-2xl flex items-center gap-2 hover:bg-red-600 transition">
-                                <FaPlus className="text-white" />
+                            <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                                <Plus size={18} />
                                 New Request
                             </button>
                         </div>
-                        {/* grid */}
 
-
-
-                        <div className="grid grid-cols-1 gap-4">
-                            {ActiveData.map((blood, index) => (
+                        <div className="space-y-4">
+                            {activeRequests.map((request, index) => (
                                 <div
                                     key={index}
-                                    className="border border-gray-200 shadow bg-white rounded-xl py-10 px-4 flex-row flex justify-between"
+                                    className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition"
                                 >
-                                    {/* Header */}
-                                    <div className="flex items-start gap-3">
-                                        {/* Heart Icon */}
-                                        <div className="p-3 rounded-full bg-pink-50">
-                                            <Heart className="text-pink-500" size={24} />
-                                        </div>
-
-                                        {/* Patient Info */}
-                                        <div className="flex flex-col gap-1">
-                                            {/* First row: ID + badges */}
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="font-semibold text-lg">
-                                                    Patient {blood.id}
-                                                </span>
-                                                <span
-                                                    className={`rounded-2xl px-3 py-0.5 text-sm border ${getStatusColor(
-                                                        blood.urgency
-                                                    )}`}
-                                                >
-                                                    {blood.urgency}
-                                                </span>
-                                                <span className="rounded-2xl px-3 py-0.5 text-sm border font-semibold">
-                                                    {blood.group}
-                                                </span>
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-12 h-12 rounded-lg bg-pink-100 flex items-center justify-center">
+                                                <Heart className="text-pink-600" size={24} />
                                             </div>
-
-                                            {/* Second row: details */}
-                                            <span className="text-sm text-gray-500">
-                                                {blood.department} • {blood.units} units needed • Requested by{" "}
-                                                {blood.doctor}
-                                            </span>
-
-                                            {/* Third row: responses + time */}
-                                            <span className="text-xs text-gray-400">
-                                                {blood.responses} donor responses • {blood.time}
-                                            </span>
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                                    <span className="font-semibold text-slate-900">Patient {request.id}</span>
+                                                    <span
+                                                        className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStatusStyles(request.urgency)}`}
+                                                    >
+                                                        {request.urgency}
+                                                    </span>
+                                                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+                                                        {request.group}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-slate-600">
+                                                    {request.department} • {request.units} units needed • Dr. {request.doctor}
+                                                </p>
+                                                <p className="text-xs text-slate-500 mt-1">
+                                                    {request.responses} donor responses • {request.time}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* Footer Actions */}
-                                    <div className="flex  items-center gap-3">
-                                        <span
-                                            className={`rounded-2xl px-3 py-1 text-sm border ${getStateColor(
-                                                blood.state
-                                            )}`}
-                                        >
-                                            {blood.state}
-                                        </span>
-                                        <button className="border border-gray-300 rounded-2xl px-4 py-1 text-sm hover:bg-gray-100">
-                                            View Details
-                                        </button>
-                                        <button className="bg-purple-600 text-white rounded-2xl px-4 py-1 text-sm hover:bg-purple-700">
-                                            Manage
-                                        </button>
+                                        <div className="flex items-center gap-3">
+                                            <span
+                                                className={`text-xs font-semibold px-3 py-1 rounded-full ${request.state === "Active"
+                                                        ? "bg-emerald-100 text-emerald-700"
+                                                        : request.state === "Matching"
+                                                            ? "bg-blue-100 text-blue-700"
+                                                            : "bg-purple-100 text-purple-700"
+                                                    }`}
+                                            >
+                                                {request.state}
+                                            </span>
+                                            <button className="border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm px-4 py-2 rounded-lg transition">
+                                                Details
+                                            </button>
+                                            <button className="bg-purple-600 hover:bg-purple-700 text-white text-sm px-4 py-2 rounded-lg transition flex items-center gap-2">
+                                                Manage
+                                                <ChevronRight size={16} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
-
-
-
                     </div>
                 )}
 
+                {/* Donors Tab */}
                 {activeTab === "donors" && (
-
                     <div>
-                        {/* Header */}
                         <div className="flex items-center justify-between mb-6">
                             <div>
-                                <h2 className="text-2xl font-bold">Donor Network</h2>
-                                <p className="text-gray-600 text-base">
-                                    Available donors in your area</p>
+                                <h2 className="text-2xl font-bold text-slate-900">Donor Network</h2>
+                                <p className="text-slate-600 text-sm mt-1">Available donors in your area</p>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <button className="hover:bg-red-500 text-black border border-gray-200 px-3 py-1 rounded-2xl flex items-center gap-2 hover:text-white transition">
-                                    <Funnel size={18} />
-                                    Filters
+                            <div className="flex items-center gap-2">
+                                <button className="border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                                    <Filter size={18} />
+                                    Filter
                                 </button>
-                                <button className="hover:bg-red-500 text-black border border-gray-200 px-3 py-1 rounded-2xl flex items-center gap-2 hover:text-white transition">
+                                <button className="border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg flex items-center gap-2 transition">
                                     <Search size={18} />
                                     Search
                                 </button>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-8">
-                            {DonorData.map((blood, index) => (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {donors.map((donor, index) => (
                                 <div
                                     key={index}
-                                    className="border border-gray-200 shadow bg-white rounded-xl py-10 px-4 flex-row flex justify-between"
+                                    className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition"
                                 >
-                                    {/* Header */}
-                                    <div className="flex items-start gap-3">
-                                        {/* First Letter Badge */}
-                                        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 font-bold text-lg">
-                                            {blood.id.charAt(0)}
-                                        </div>
-
-                                        {/* Patient Info */}
-                                        <div className="flex flex-col gap-1">
-                                            {/* First row: ID + badges */}
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="font-semibold text-lg">
-                                                    {blood.id}
-                                                </span>
-
-                                                <span className="rounded-2xl px-3 py-0.5 text-sm border font-semibold">
-                                                    {blood.group}
-                                                </span><Shield size={18} className='text-green-700' />
-
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center font-bold text-purple-600 text-lg">
+                                                {donor.id.charAt(0)}
                                             </div>
-
-                                            {/* Second row: details */}
-                                            <span className="text-sm text-gray-500 flex items-center">
-                                                {blood.miles}miles • <Star size={16} className='text-yellow-400 mr-1' />  {blood.rating} rating
-                                            </span>
-
-                                            {/* Third row: responses + time */}
-                                            <span className="text-xs text-gray-400">
-                                                Available {blood.responses} • Last Donation: {blood.time}
-                                            </span>
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="font-semibold text-slate-900">{donor.id}</span>
+                                                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+                                                        {donor.group}
+                                                    </span>
+                                                    <Shield className="text-emerald-600" size={16} />
+                                                </div>
+                                                <p className="text-sm text-slate-600">
+                                                    {donor.miles} miles • <Star className="inline text-yellow-400" size={14} /> {donor.rating}{" "}
+                                                    rating
+                                                </p>
+                                                <p className="text-xs text-slate-500 mt-1">
+                                                    Available {donor.available ? "now" : "in 30 min"} • Last donation: {donor.time}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* Footer Actions */}
-                                    <div className="flex  items-center gap-3 flex-col">
-
-                                        <button className="border border-gray-300 rounded-2xl px-4 py-1 text-sm hover:bg-gray-100">
-                                            View Profile
-                                        </button>
-                                        <button className="bg-red-500 text-white rounded-2xl px-6 py-2 text-sm hover:bg-red-400">
-                                            Contact
-                                        </button>
+                                        <div className="flex flex-col gap-2">
+                                            <button className="border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm px-4 py-2 rounded-lg transition">
+                                                Profile
+                                            </button>
+                                            <button className="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg transition">
+                                                Contact
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
-
-
-
-
                     </div>
                 )}
-
-
             </div>
-
-
-
-
-        </>
+        </div>
     )
 }
-
-export default Hospital
