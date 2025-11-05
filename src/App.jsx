@@ -26,6 +26,16 @@ const MainLayout = ({ user, setUser }) => (
   </>
 );
 
+const DashboardLayout = ({ user, setUser }) => (
+  <>
+    <Navbar user={user} setUser={setUser} />
+    <main>
+      <Outlet />
+    </main>
+    <Footer />
+  </>
+);
+
 const NavbarLayout = ({ user, setUser }) => (
   <>
     <Navbar user={user} setUser={setUser} />

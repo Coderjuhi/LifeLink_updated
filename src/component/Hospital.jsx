@@ -112,6 +112,12 @@ export default function HospitalDashboard() {
                 return "bg-blue-500"
         }
     }
+        const handleLogout = () => {
+        setUser(null);
+        localStorage.removeItem("user");
+        navigate("/", { replace: true });
+    };
+    
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 pt-12">
