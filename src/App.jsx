@@ -18,7 +18,7 @@ import { Outlet } from "react-router-dom";
 const MainLayout = ({ user, setUser }) => (
   <>
     <Navbar user={user} setUser={setUser} />
-    <main className="pt-10">
+    <main className="">
       
     <Outlet />
     </main>

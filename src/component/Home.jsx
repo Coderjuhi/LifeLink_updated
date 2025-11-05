@@ -36,7 +36,7 @@ const Home = () => {
         <>
 
             <section className="w-full bg-red-50 h-full">
-                <div className="max-w-6xl mx-auto text-center px-6 py-12 min-h-[60vh]">
+                <div className="max-w-6xl mx-auto text-center px-6 py-12 pt-20 min-h-[60vh]">
                     {/* Tagline */}
                     <div className="inline-block bg-gray-100 rounded-2xl px-3 py-1 mt-5">
                         <p className="text-sm font-medium text-black">

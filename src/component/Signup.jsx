@@ -36,7 +36,7 @@ export default function Signup({ setUser }) {
         address
       });
 
-      alert("✅ Signup Successful!");
+      alert("Signup Successful!");
 
       localStorage.setItem("user", JSON.stringify(data.user));
       setUser?.(data.user);
