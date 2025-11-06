@@ -18,7 +18,7 @@ import { useNavigate } from "react-router";
 
 export default function HospitalDashboard({ user, setUser }) {
     const [activeTab, setActiveTab] = useState("overview")
-     const navigate = useNavigate();
+    const navigate = useNavigate();
 
     // Mock data
     const activeRequests = [
@@ -112,7 +112,7 @@ export default function HospitalDashboard({ user, setUser }) {
                 return "bg-blue-500"
         }
     }
-        const handleLogout = () => {
+    const handleLogout = () => {
         setUser(null);
         localStorage.removeItem("user");
         navigate("/", { replace: true });
@@ -169,8 +169,8 @@ export default function HospitalDashboard({ user, setUser }) {
                             key={tab}
                             onClick={() => setActiveTab(tab.toLowerCase())}
                             className={`px-4 py-3 font-medium border-b-2 transition ${activeTab === tab.toLowerCase()
-                                    ? "border-red-600 text-red-600"
-                                    : "border-transparent text-slate-600 hover:text-slate-900"
+                                ? "border-red-600 text-red-600"
+                                : "border-transparent text-slate-600 hover:text-slate-900"
                                 }`}
                         >
                             {tab}
@@ -393,10 +393,10 @@ export default function HospitalDashboard({ user, setUser }) {
                                         <div className="flex items-center gap-3">
                                             <span
                                                 className={`text-xs font-semibold px-3 py-1 rounded-full ${request.state === "Active"
-                                                        ? "bg-emerald-100 text-emerald-700"
-                                                        : request.state === "Matching"
-                                                            ? "bg-blue-100 text-blue-700"
-                                                            : "bg-purple-100 text-purple-700"
+                                                    ? "bg-emerald-100 text-emerald-700"
+                                                    : request.state === "Matching"
+                                                        ? "bg-blue-100 text-blue-700"
+                                                        : "bg-purple-100 text-purple-700"
                                                     }`}
                                             >
                                                 {request.state}
