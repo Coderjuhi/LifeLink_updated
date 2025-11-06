@@ -1,8 +1,15 @@
 // File: App.jsx
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import API from './api/api';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
+import API from "./api/api";
 
+// Components
 import Navbar from "./component/Navbar";
 import Home from "./component/Home";
 import Signup from "./component/Signup";
@@ -15,7 +22,7 @@ import Administrator from "./component/Administrator";
 import About from "./component/About";
 import Contact from "./component/Contact";
 
-//  Layouts
+// Layouts
 const MainLayout = ({ user, setUser }) => (
   <>
     <Navbar user={user} setUser={setUser} />
@@ -26,28 +33,19 @@ const MainLayout = ({ user, setUser }) => (
   </>
 );
 
-const DashboardLayout = ({ user, setUser }) => (
-  <>
-    <Navbar user={user} setUser={setUser} />
-    <main>
-      <Outlet />
-    </main>
-    <Footer />
-  </>
-);
-
-const NavbarLayout = ({ user, setUser }) => (
-  <>
-    <Navbar user={user} setUser={setUser} />
-    <Outlet />
-  </>
-);
-
 const BlankLayout = () => <Outlet />;
 
-//  Protected Route Component
-const ProtectedRoute = ({ user, children }) => {
+// Protected routes
+const ProtectedRoute = ({ user, loading, children }) => {
+  if (loading) return <div className="text-center mt-10 text-lg">Checking session...</div>;
   if (!user) return <Navigate to="/signin" replace />;
+  return children;
+};
+
+const RoleProtectedRoute = ({ user, loading, allowedRole, children }) => {
+  if (loading) return <div className="text-center mt-10 text-lg">Checking session...</div>;
+  if (!user) return <Navigate to="/signin" replace />;
+  if (user.accountType !== allowedRole) return <Navigate to="/" replace />;
   return children;
 };
 
@@ -55,7 +53,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  //  Fetch logged-in user on app start (token-based verification)
+  // Fetch logged-in user once on load
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -73,46 +71,85 @@ function App() {
     fetchUser();
   }, []);
 
-  //  Persist user in localStorage when it changes
+  // Keep user synced to localStorage
   useEffect(() => {
     if (user) localStorage.setItem("user", JSON.stringify(user));
     else localStorage.removeItem("user");
   }, [user]);
 
-  //  Avoid flashing redirect before auth check finishes
   if (loading) return <div className="text-center mt-10 text-lg">Loading...</div>;
 
   return (
     <Router>
       <Routes>
-        {/*  Main Layout (Navbar + Footer) */}
+        {/* Public Routes */}
         <Route element={<MainLayout user={user} setUser={setUser} />}>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-        </Route>
-
-        {/*  Navbar Only Layout */}
-        <Route element={<NavbarLayout user={user} setUser={setUser} />}>
           <Route path="/signup" element={<Signup setUser={setUser} />} />
           <Route path="/signin" element={<Signin setUser={setUser} />} />
         </Route>
 
-        {/*  Protected Routes (Require Login) */}
+        {/* Role-Protected Dashboards */}
         <Route
+          path="/dashboard/blood-donor"
           element={
-            <ProtectedRoute user={user}>
-              <BlankLayout />
-            </ProtectedRoute>
+            <RoleProtectedRoute
+              user={user}
+              loading={loading}
+              allowedRole="donor"
+            >
+              <BlankLayout>
+                <BloodDonor user={user} setUser={setUser} />
+              </BlankLayout>
+            </RoleProtectedRoute>
           }
-        >
-          <Route path="/blood-donor" element={<BloodDonor user={user} setUser={setUser} />} />
-          <Route path="/recipient" element={<Recipient />} />
-          <Route path="/hospital" element={<Hospital />} />
-          <Route path="/admin" element={<Administrator />} />
-        </Route>
+        />
+        <Route
+          path="/dashboard/recipient"
+          element={
+            <RoleProtectedRoute
+              user={user}
+              loading={loading}
+              allowedRole="recipient"
+            >
+              <BlankLayout>
+                <Recipient user={user} setUser={setUser} />
+              </BlankLayout>
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/hospital"
+          element={
+            <RoleProtectedRoute
+              user={user}
+              loading={loading}
+              allowedRole="hospital"
+            >
+              <BlankLayout>
+                <Hospital user={user} setUser={setUser} />
+              </BlankLayout>
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin"
+          element={
+            <RoleProtectedRoute
+              user={user}
+              loading={loading}
+              allowedRole="admin"
+            >
+              <BlankLayout>
+                <Administrator user={user} setUser={setUser} />
+              </BlankLayout>
+            </RoleProtectedRoute>
+          }
+        />
 
-        {/*  Catch-all redirect */}
+        {/* Catch-All */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

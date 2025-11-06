@@ -14,11 +14,11 @@ import {
     ChevronRight,
 } from "lucide-react"
 import { FaArrowRightFromBracket } from "react-icons/fa6"
+import { useNavigate } from "react-router";
 
-// Removed invalid Tailwind classes with dynamic colors
-
-export default function HospitalDashboard() {
+export default function HospitalDashboard({ user, setUser }) {
     const [activeTab, setActiveTab] = useState("overview")
+     const navigate = useNavigate();
 
     // Mock data
     const activeRequests = [
@@ -117,7 +117,7 @@ export default function HospitalDashboard() {
         localStorage.removeItem("user");
         navigate("/", { replace: true });
     };
-    
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 pt-12">

@@ -3,21 +3,14 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FaHeartbeat } from "react-icons/fa";
 
-const Navbar = () => {
+const Navbar = ({ user, setUser }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeLink, setActiveLink] = useState("home");
-  const [user, setUser] = useState(null);
   const profileRef = useRef(null);
   const navigate = useNavigate();
 
-  // Load user from localStorage (persistent login)
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
-
-  // Close dropdown on outside click
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -44,38 +37,43 @@ const Navbar = () => {
     navigate("/signin", { replace: true });
   };
 
-  const handleProfileClick = () => {
-    if (!user) return;
+  // ✅ Get dashboard route based on accountType
+  const getDashboardPath = () => {
+    if (!user) return null;
     switch (user.accountType) {
       case "donor":
-        navigate("/blood-donor");
-        break;
+        return "/dashboard/blood-donor";
       case "recipient":
-        navigate("/recipient");
-        break;
+        return "/dashboard/recipient";
       case "hospital":
-        navigate("/hospital");
-        break;
+        return "/dashboard/hospital";
       case "admin":
-        navigate("/admin");
-        break;
+        return "/dashboard/admin";
       default:
-        navigate("/");
+        return "/";
     }
-    setDropdownOpen(false);
+  };
+
+  // ✅ Handle dashboard click
+  const handleDashboardClick = () => {
+    if (!user) {
+      navigate("/signin");
+      return;
+    }
+    navigate(getDashboardPath());
   };
 
   const firstLetter = user ? user.name.charAt(0).toUpperCase() : "";
 
   return (
-    <main className="fixed top-2 md:top-5 left-0 w-full flex h-[60px] justify-between z-50 md:px-4 items-center ">
-      {/* Desktop brand */}
+    <main className="fixed top-2 md:top-5 left-0 w-full flex h-[60px] justify-between z-50 md:px-4 items-center">
+      {/* Brand (desktop) */}
       <div className="md:flex hidden items-center text-2xl font-bold text-red-600">
         LifeLink <FaHeartbeat className="mr-3 ml-3" />
       </div>
 
       <nav className="bg-white h-full md:w-auto w-full text-black z-50 shadow-md flex justify-between items-center px-6 rounded-xl md:rounded-3xl">
-        {/* Mobile brand */}
+        {/* Brand (mobile) */}
         <div className="flex md:hidden items-center text-2xl font-bold text-red-600">
           LifeLink <FaHeartbeat className="mr-3 ml-3" />
         </div>
@@ -116,40 +114,20 @@ const Navbar = () => {
             Contact Us
           </Link>
 
-          {/* Register dropdown */}
-          {/* <div className="relative dropdown">
-            <button
-              onClick={(e) => {
-                handleLinkClick("");
-                e.stopPropagation();
-                setDropdownOpen(!dropdownOpen);
-              }}
-              className="font-medium cursor-pointer hover:text-red-700 flex items-center"
-            >
-              Register Now <IoMdArrowDropdown />
-            </button>
-            {dropdownOpen && (
-              <div className="absolute mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                <Link
-                  to="/register-donor"
-                  onClick={() => handleLinkClick("donor")}
-                  className="block px-4 py-2 text-red-600 hover:bg-red-100"
-                >
-                  Register as Donor
-                </Link>
-                <Link
-                  to="/register-recipient"
-                  onClick={() => handleLinkClick("recipient")}
-                  className="block px-4 py-2 text-red-600 hover:bg-red-100"
-                >
-                  Register as Recipient
-                </Link>
-              </div>
-            )}
-          </div> */}
+          {/* ✅ Dashboard button (click protected) */}
+          <button
+            onClick={handleDashboardClick}
+            className={`relative font-medium transition-colors duration-300 ${
+              activeLink === "dashboard"
+                ? "text-red-700"
+                : "hover:text-red-700"
+            }`}
+          >
+            Dashboard
+          </button>
         </div>
 
-        {/* Hamburger (mobile) */}
+        {/* Hamburger menu (mobile) */}
         <div
           className="md:hidden flex flex-col cursor-pointer"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -160,7 +138,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Right Section: Login / Join / Profile */}
+      {/* Right side: profile or sign in */}
       <div ref={profileRef} className="hidden md:flex items-center gap-3">
         {user ? (
           <div className="relative">
@@ -174,7 +152,7 @@ const Navbar = () => {
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg text-sm z-50">
                 <button
-                  onClick={handleProfileClick}
+                  onClick={handleDashboardClick}
                   className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-t-lg"
                 >
                   Profile

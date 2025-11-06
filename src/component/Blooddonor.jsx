@@ -15,20 +15,20 @@ import {
     CheckCircle,
 } from "lucide-react"
 import { FaArrowRightFromBracket } from "react-icons/fa6"
-import { useNavigate, useOutletContext } from "react-router"
+import { useNavigate } from "react-router"
 
 function DonorDashboard({ user, setUser }) {
     const [isAvailable, setIsAvailable] = useState(false)
     const [activeTab, setActiveTab] = useState("blood")
     const [isModalOpen, setIsModalOpen] = useState(false)
-      const navigate = useNavigate();
+    const navigate = useNavigate();
 
     console.log("user is", user);
 
     const handleLogout = () => {
         setUser(null);
         localStorage.removeItem("user");
-        navigate("/", { replace: true });
+        // navigate("/", { replace: true });
     };
 
     const requests = {
@@ -168,7 +168,7 @@ function DonorDashboard({ user, setUser }) {
                         <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                             <Settings size={20} className="text-gray-600" />
                         </button>
-                        <button onClick={()=>handleLogout()} className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-500 hover:text-white rounded-lg transition-colors font-medium text-sm">
+                        <button onClick={() => handleLogout()} className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-500 hover:text-white rounded-lg transition-colors font-medium text-sm">
                             <FaArrowRightFromBracket size={16} />
                             Logout
                         </button>
@@ -348,7 +348,7 @@ function DonorDashboard({ user, setUser }) {
 
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-2xl font-bold text-white shadow-md">
-                                        { user?user.name[0].toUpperCase():"U"}
+                                        {user ? user.name[0].toUpperCase() : "U"}
                                     </div>
                                     <div>
                                         <p className="font-semibold text-gray-900 capitalize">{user ? user.name : "User001"}</p>
@@ -363,7 +363,7 @@ function DonorDashboard({ user, setUser }) {
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-600">Member Since</span>
-                                        <span className="font-medium text-gray-900 capitalize">{ user?user.memberSince:"Sep 21, 2025"}</span>
+                                        <span className="font-medium text-gray-900 capitalize">{user ? user.memberSince : "Sep 21, 2025"}</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-600 capitalize">{user ? user.accounType : "unkown"}</span>
