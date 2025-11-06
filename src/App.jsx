@@ -95,59 +95,39 @@ function App() {
         <Route
           path="/dashboard/blood-donor"
           element={
-            <RoleProtectedRoute
-              user={user}
-              loading={loading}
-              allowedRole="donor"
-            >
-              <BlankLayout>
-                <BloodDonor user={user} setUser={setUser} />
-              </BlankLayout>
+            <RoleProtectedRoute user={user} loading={loading} allowedRole="donor">
+              <BloodDonor user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
         />
+
         <Route
           path="/dashboard/recipient"
           element={
-            <RoleProtectedRoute
-              user={user}
-              loading={loading}
-              allowedRole="recipient"
-            >
-              <BlankLayout>
-                <Recipient user={user} setUser={setUser} />
-              </BlankLayout>
+            <RoleProtectedRoute user={user} loading={loading} allowedRole="recipient">
+              <Recipient user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
         />
+
         <Route
           path="/dashboard/hospital"
           element={
-            <RoleProtectedRoute
-              user={user}
-              loading={loading}
-              allowedRole="hospital"
-            >
-              <BlankLayout>
-                <Hospital user={user} setUser={setUser} />
-              </BlankLayout>
+            <RoleProtectedRoute user={user} loading={loading} allowedRole="hospital">
+              <Hospital user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
         />
+
         <Route
           path="/dashboard/admin"
           element={
-            <RoleProtectedRoute
-              user={user}
-              loading={loading}
-              allowedRole="admin"
-            >
-              <BlankLayout>
-                <Administrator user={user} setUser={setUser} />
-              </BlankLayout>
+            <RoleProtectedRoute user={user} loading={loading} allowedRole="admin">
+              <Administrator user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
         />
+
 
         {/* Catch-All */}
         <Route path="*" element={<Navigate to="/" replace />} />

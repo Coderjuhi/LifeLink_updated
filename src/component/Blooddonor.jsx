@@ -28,7 +28,7 @@ function DonorDashboard({ user, setUser }) {
     const handleLogout = () => {
         setUser(null);
         localStorage.removeItem("user");
-        // navigate("/", { replace: true });
+        navigate("/", { replace: true });
     };
 
     const requests = {
@@ -352,7 +352,7 @@ function DonorDashboard({ user, setUser }) {
                                     </div>
                                     <div>
                                         <p className="font-semibold text-gray-900 capitalize">{user ? user.name : "User001"}</p>
-                                        <p className="text-sm text-gray-600 capitalize">{user ? user.bloodType : "unkown"} Blood Type</p>
+                                        <p className="text-sm text-gray-600 capitalize">Blood Type : {user ? user.bloodType : "unkown"} </p>
                                     </div>
                                 </div>
 
