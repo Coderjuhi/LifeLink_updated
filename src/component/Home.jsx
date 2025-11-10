@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router";
 import { FaRegHeart } from "react-icons/fa6";
 import { BsArrowRight } from "react-icons/bs";
 import { FaMapMarkerAlt, FaPhoneAlt, FaLock, FaUserFriends, FaHeartbeat, FaClock } from "react-icons/fa";
-import { Heart, Users, MapPin, Clock, Award, Shield } from 'lucide-react';
+import { Heart, Users, MapPin, Clock, Award, Shield ,X} from 'lucide-react';
 
 
 const Home = () => {
@@ -30,6 +30,8 @@ const Home = () => {
             description: '24/7 emergency support for critical blood and organ requirements.',
         },
     ];
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     return (
 
 
@@ -119,14 +121,49 @@ const Home = () => {
                             </p>
                         </div>
 
-                        {/* Card 2 */}
-                        <div className="bg-white p-6 rounded-2xl shadow hover:shadow-lg border border-transparent hover:border-red-400 hover:scale-98 transition duration-300">
+                        {/* Emergency SOS Card */}
+                        <div
+                            onClick={() => setIsModalOpen(true)}
+                            className="bg-white p-6 rounded-2xl shadow hover:shadow-lg border border-transparent hover:border-red-400 hover:scale-98 transition duration-300 cursor-pointer"
+                        >
                             <FaPhoneAlt className="text-red-400 text-3xl mb-4" />
                             <h2 className="text-xl font-semibold mb-2">Emergency SOS</h2>
                             <p className="text-gray-600">
                                 One-tap emergency alerts notify nearby compatible donors and hospitals instantly during critical situations.
                             </p>
                         </div>
+
+                        {/* Modal */}
+                        {isModalOpen && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                                <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+                                    {/* Modal Header */}
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-xl font-semibold text-gray-900">Emergency Alert</h2>
+                                        <button
+                                            onClick={() => setIsModalOpen(false)}
+                                            className="text-gray-400 hover:text-gray-600"
+                                        >
+                                            <X size={24} />
+                                        </button>
+                                    </div>
+
+                                    {/* Modal Body */}
+                                    <p className="text-gray-600 mb-6">
+                                        Your emergency SOS has been sent to nearby hospitals and donors. You'll receive responses shortly.
+                                    </p>
+
+                                    {/* Close Button */}
+                                    <button
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="w-full px-4 py-2.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                                    >
+                                        Got it
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
 
                         {/* Card 3 */}
                         <div className="bg-white p-6 rounded-2xl shadow hover:shadow-lg border border-transparent hover:border-green-500 hover:scale-98 transition duration-300">

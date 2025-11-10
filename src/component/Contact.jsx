@@ -4,7 +4,7 @@ import { Mail, MapPin, Phone, MessageCircle } from 'lucide-react';
 function Contact() {
   return (
     <>
-      <section className="max-w-7xl mx-auto p-6 pt-5">
+      <section className="max-w-7xl mx-auto p-6 pt-20">
         <div className="bg-gradient-to-r from-red-400 via-red-300 to-red-400 shadow-lg overflow-hidden flex flex-col items-center justify-center min-h-[30vh] text-center px-4 py-10 rounded-xl">
           <h3 className="text-2xl md:text-3xl font-bold mb-6 text-red-500 ">
             Contact
@@ -30,7 +30,7 @@ function Contact() {
               </p>
               <p className="flex items-center gap-3 text-gray-700">
                 <Phone className="text-red-600 text-xl" />
-                <span><strong>Phone:</strong> +91 98765 4988</span>
+                <span><strong>Phone:</strong> +91 98xxxxxxx</span>
               </p>
               <p className="flex items-center gap-3 text-gray-700">
                 <Mail className="text-red-600 text-xl" />

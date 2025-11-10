@@ -133,7 +133,7 @@ export default function RecipientDashboard({ user, setUser }) {
 
                     {/* Center Title */}
                     <div className="hidden md:flex flex-col items-center">
-                        <h1 className="font-semibold text-gray-900">Donor Dashboard</h1>
+                        <h1 className="font-semibold text-gray-900">Recipient Dashboard</h1>
                         <p className="text-xs text-gray-500">Welcome back</p>
                     </div>
 
@@ -145,6 +145,13 @@ export default function RecipientDashboard({ user, setUser }) {
                         <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                             <Settings size={20} className="text-gray-600" />
                         </button>
+                        <button
+                            onClick={() => navigate("/")}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                            Home
+                        </button>
+                        
                         <button onClick={() => handleLogout()} className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-500 hover:text-white rounded-lg transition-colors font-medium text-sm">
                             <FaArrowRightFromBracket size={16} />
                             Logout

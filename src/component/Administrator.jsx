@@ -37,10 +37,10 @@ const SAMPLE_USERS = [
 ];
 
 const DEFAULT_METRICS = {
-    totalUsers: "24,827",
-    activeDonors: "1,203",
-    partnerHospitals: "47",
-    livesConnected: "12,847",
+    totalUsers: "10",
+    activeDonors: "0",
+    partnerHospitals: "2",
+    livesConnected: "1",
 };
 
 /* ---------- UI constants ---------- */
@@ -160,6 +160,13 @@ export default function AdminDashboard({ user, setUser }) {
                         <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                             <Settings size={20} className="text-gray-600" />
                         </button>
+                        <button
+                            onClick={() => navigate("/")}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                            Home
+                        </button>
+                        
                         <button onClick={() => handleLogout()} className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-500 hover:text-white rounded-lg transition-colors font-medium text-sm">
                             <FaArrowRightFromBracket size={16} />
                             Logout

@@ -49,7 +49,7 @@ export default function Signup({ setUser }) {
       });
 
       alert("Signup Successful!");
-      setUser?.(data.user);
+
       navigate("/signin");
 
     } catch (err) {
@@ -135,16 +135,18 @@ export default function Signup({ setUser }) {
               </button>
             </div>
 
-            {/* Confirm Password */}
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="confirmPassword"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              required
-              className="w-full rounded-lg border border-gray-200 px-4 py-1"
-              placeholder="Confirm Password"
-            />
+            {form.accountType !== 'admin' && (
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                required
+                className="w-full rounded-lg border border-gray-200 px-4 py-1"
+                placeholder="Confirm Password"
+              />
+            )}
+
 
             {/* Account Type */}
             <select
@@ -161,8 +163,8 @@ export default function Signup({ setUser }) {
               <option value="admin">Admin</option>
             </select>
 
-            {/* Blood Type (Visible only if donor) */}
-            {form.accountType === 'donor' ? (
+            {/* Blood Type (Visible only if donor or recipient) */}
+            {(form.accountType === 'donor' || form.accountType === 'recipient') && (
               <select
                 name="bloodType"
                 value={form.bloodType}
@@ -176,13 +178,6 @@ export default function Signup({ setUser }) {
                 <option value="O+">O+</option><option value="O-">O-</option>
                 <option value="AB+">AB+</option><option value="AB-">AB-</option>
               </select>
-            ) : (
-              <input
-                type="text"
-                value="Not Applicable"
-                disabled
-                className="w-full border border-gray-200 rounded-lg px-4 py-1 bg-gray-100 text-gray-500"
-              />
             )}
 
             {/* Submit */}

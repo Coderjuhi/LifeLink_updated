@@ -22,6 +22,36 @@ import Administrator from "./component/Administrator";
 import About from "./component/About";
 import Contact from "./component/Contact";
 
+const Loader = ({
+  message = "Loading...",
+  loaderWidth = "10rem", // default w-32 (128px)
+  loaderHeight = "10rem", // default h-32 (128px)
+  containerHeight = "100vh", // default full screen
+}) => (
+  <div
+    className="flex flex-col items-center justify-center bg-gradient-to-b from-red-50 to-white"
+    style={{ minHeight: containerHeight }}
+  >
+    <img
+      src="/src/assets/Loading Dots.gif"
+      alt="Loading"
+      style={{
+        width: loaderWidth,
+        height: loaderHeight,
+      }}
+      className="mb-6 object-contain"
+    />
+    <p className="text-gray-700 text-xl font-semibold tracking-wide animate-pulse">
+      {message}
+    </p>
+  </div>
+);
+
+
+ 
+
+
+
 // Layouts
 const MainLayout = ({ user, setUser }) => (
   <>
@@ -37,13 +67,13 @@ const BlankLayout = () => <Outlet />;
 
 // Protected routes
 const ProtectedRoute = ({ user, loading, children }) => {
-  if (loading) return <div className="text-center mt-10 text-lg">Checking session...</div>;
+  if (loading) return <Loader message="Checking session..." />;
   if (!user) return <Navigate to="/signin" replace />;
   return children;
 };
 
 const RoleProtectedRoute = ({ user, loading, allowedRole, children }) => {
-  if (loading) return <div className="text-center mt-10 text-lg">Checking session...</div>;
+  if (loading) return <Loader message="Checking session..." />;
   if (!user) return <Navigate to="/signin" replace />;
   if (user.accountType !== allowedRole) return <Navigate to="/" replace />;
   return children;
@@ -77,7 +107,7 @@ function App() {
     else localStorage.removeItem("user");
   }, [user]);
 
-  if (loading) return <div className="text-center mt-10 text-lg">Loading...</div>;
+  if (loading) return <Loader message="Loading, please wait..." />;
 
   return (
     <Router>
@@ -95,7 +125,11 @@ function App() {
         <Route
           path="/dashboard/blood-donor"
           element={
-            <RoleProtectedRoute user={user} loading={loading} allowedRole="donor">
+            <RoleProtectedRoute
+              user={user}
+              loading={loading}
+              allowedRole="donor"
+            >
               <BloodDonor user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
@@ -104,7 +138,11 @@ function App() {
         <Route
           path="/dashboard/recipient"
           element={
-            <RoleProtectedRoute user={user} loading={loading} allowedRole="recipient">
+            <RoleProtectedRoute
+              user={user}
+              loading={loading}
+              allowedRole="recipient"
+            >
               <Recipient user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
@@ -113,7 +151,11 @@ function App() {
         <Route
           path="/dashboard/hospital"
           element={
-            <RoleProtectedRoute user={user} loading={loading} allowedRole="hospital">
+            <RoleProtectedRoute
+              user={user}
+              loading={loading}
+              allowedRole="hospital"
+            >
               <Hospital user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
@@ -122,12 +164,15 @@ function App() {
         <Route
           path="/dashboard/admin"
           element={
-            <RoleProtectedRoute user={user} loading={loading} allowedRole="admin">
+            <RoleProtectedRoute
+              user={user}
+              loading={loading}
+              allowedRole="admin"
+            >
               <Administrator user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
         />
-
 
         {/* Catch-All */}
         <Route path="*" element={<Navigate to="/" replace />} />
