@@ -361,10 +361,12 @@ export default function RecipientDashboard({ user, setUser }) {
                             </div>
 
                             <div className="space-y-3 mb-6 pb-6 border-b border-gray-100">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Location</span>
-                                    <span className="font-medium text-gray-900 capitalize">New Delhi</span>
-                                </div>
+                            <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600">Location</span>
+                                        <span className="font-medium text-gray-900 capitalize">
+                                            {user?.address || "Not specified"}
+                                        </span>
+                                    </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">Member Since</span>
                                     <span className="font-medium text-gray-900 capitalize">{user ? user.memberSince : "Sep 21, 2025"}</span>
