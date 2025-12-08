@@ -5,11 +5,13 @@ import { IoEyeOutline } from "react-icons/io5";
 import { useNavigate, Link } from 'react-router-dom';
 import api from "../api/api";
 
-export default function Signin({ setUser }) {   // ✅ accept setUser from App.jsx
+
+export default function Signin({ setUser }) {   //  accept setUser from App.jsx
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,14 +26,17 @@ export default function Signin({ setUser }) {   // ✅ accept setUser from App.j
 
       alert("Login Successful");
 
-      // ✅ Save user info in localStorage + App state
+      //  Save user info in localStorage + App state
       localStorage.setItem("user", JSON.stringify(res.data.user));
       setUser(res.data.user);
 
-       navigate("/");
-
+      if (res.data.user.accountType === "admin") {
+        navigate("/dashboard/admin");  // direct to admin dashboard
+      } else {
+        navigate("/");       // normal user → home
+      }
     } catch (error) {
-      alert(error.response?.data?.message || "Login failed ❌");
+      alert(error.response?.data?.message || "Login failed ");
     }
   };
 
@@ -72,7 +77,26 @@ export default function Signin({ setUser }) {   // ✅ accept setUser from App.j
                 {showPassword ? <IoEyeOutline /> : <FaRegEyeSlash />}
               </button>
             </div>
+              
+             {/* Remember Me + Forgot Password Row */}
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center gap-2 text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={() => setRememberMe(!rememberMe)}
+                  className="w-4 h-4"
+                />
+                Remember me
+              </label>
 
+              <Link
+                to="/forgot-password"
+                className="text-purple-700 hover:underline font-medium"
+              >
+                Forgot Password?
+              </Link>
+            </div> 
             <button
               type="submit"
               className="w-full bg-purple-800 hover:bg-purple-900 text-white rounded-lg py-3 font-medium shadow-sm transition"
@@ -83,7 +107,7 @@ export default function Signin({ setUser }) {   // ✅ accept setUser from App.j
 
           <p className="mt-5 text-sm text-gray-600">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-purple-800 font-medium underline">
+            <Link to="/signup" className="text-purple-800 font-medium hover:underline">
               Sign Up
             </Link>
           </p>

@@ -7,6 +7,7 @@ import API from '../api/api';
 
 export default function Signup({ setUser }) {
   const navigate = useNavigate();
+  const [errors, setErrors] = useState({});
 
   const [form, setForm] = useState({
     name: '',
@@ -22,12 +23,28 @@ export default function Signup({ setUser }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({
-      ...prev,
-      [name]: value,
-      ...(name === 'accountType' && value !== 'donor' ? { bloodType: 'Not Applicable' } : {})
-    }));
+
+    setForm(prev => ({ ...prev, [name]: value }));
+
+    // LIVE PASSWORD VALIDATION
+    if (name === "password") {
+      if (value.length < 6) {
+        setErrors(prev => ({ ...prev, password: "Password must be at least 6 characters" }));
+      } else {
+        setErrors(prev => ({ ...prev, password: "" }));
+      }
+    }
+
+    // CONFIRM PASSWORD VALIDATION
+    if (name === "confirmPassword") {
+      if (value !== form.password) {
+        setErrors(prev => ({ ...prev, confirmPassword: "Passwords do not match" }));
+      } else {
+        setErrors(prev => ({ ...prev, confirmPassword: "" }));
+      }
+    }
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -118,14 +135,16 @@ export default function Signup({ setUser }) {
             {/* Password */}
             <div className="relative">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={form.password}
                 onChange={handleChange}
                 required
-                className="w-full rounded-lg border border-gray-200 px-4 py-1 pr-12"
+                className={`w-full rounded-lg border px-4 py-1 pr-12 
+      ${errors.password ? "border-red-500" : "border-gray-200"}`}
                 placeholder="Password"
               />
+
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -133,19 +152,42 @@ export default function Signup({ setUser }) {
               >
                 {showPassword ? <IoEyeOutline /> : <FaRegEyeSlash />}
               </button>
+
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+              )}
             </div>
 
-            {form.accountType !== 'admin' && (
+
+            {/*confirm*/}
+            <div className="relative">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 name="confirmPassword"
                 value={form.confirmPassword}
                 onChange={handleChange}
                 required
-                className="w-full rounded-lg border border-gray-200 px-4 py-1"
+                className={`w-full rounded-lg border px-4 py-1 pr-12 
+      ${errors.confirmPassword ? "border-red-500" : "border-gray-200"}`}
                 placeholder="Confirm Password"
               />
-            )}
+
+              {/* Eye Button */}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? <IoEyeOutline /> : <FaRegEyeSlash />}
+              </button>
+
+              {/* Error Message */}
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+              )}
+            </div>
+
+
 
 
             {/* Account Type */}
@@ -160,7 +202,7 @@ export default function Signup({ setUser }) {
               <option value="donor">Donor</option>
               <option value="recipient">Recipient</option>
               <option value="hospital">Hospital</option>
-              <option value="admin">Admin</option>
+              {/* <option value="admin">Admin</option> */}
             </select>
 
             {/* Blood Type (Visible only if donor or recipient) */}

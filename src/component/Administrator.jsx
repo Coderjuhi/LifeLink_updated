@@ -21,8 +21,11 @@ import {
     Funnel,
 } from "lucide-react";
 import { FaArrowRightFromBracket } from "react-icons/fa6";
+import { useNavigate } from "react-router"
 
-/* ---------- sample fallback data ---------- */
+const API_BASE = "http://localhost:5000"; // make sure this is added
+
+// ---------- sample fallback data ----------
 const SAMPLE_HOSPITALS = [
     { name: "City Hospital", location: "New York, NY", status: "Active", totalRequests: 45, fulfillmentRate: 92 },
     { name: "Emergency Medical Center", location: "Los Angeles, CA", status: "Active", totalRequests: 38, fulfillmentRate: 89 },
@@ -36,14 +39,15 @@ const SAMPLE_USERS = [
     { name: "Minal", email: "mike@example.com", role: "Donor", bloodType: "B+", status: "Inactive", joined: "11/20/2023", donations: "12" },
 ];
 
+// ---------- UPDATED DEFAULT METRICS ----------
 const DEFAULT_METRICS = {
-    totalUsers: "10",
-    activeDonors: "0",
-    partnerHospitals: "2",
-    livesConnected: "1",
+    totalUsers: 0,
+    activeDonors: 0,
+    partnerHospitals: 0,
+    livesConnected: 0,
 };
 
-/* ---------- UI constants ---------- */
+// ---------- tabs ----------
 const TABS = [
     { id: "overview", label: "Overview", icon: <Activity size={20} /> },
     { id: "users", label: "Users", icon: <Users size={20} /> },
@@ -56,7 +60,9 @@ export default function AdminDashboard({ user, setUser }) {
     const [activeTab, setActiveTab] = useState("overview");
     const [loading, setLoading] = useState(true);
 
+    // UPDATED: metrics start with 0, not default strings
     const [metrics, setMetrics] = useState(DEFAULT_METRICS);
+
     const [users, setUsers] = useState(SAMPLE_USERS);
     const [hospitals, setHospitals] = useState(SAMPLE_HOSPITALS);
     const [error, setError] = useState(null);
@@ -64,68 +70,53 @@ export default function AdminDashboard({ user, setUser }) {
 
     useEffect(() => {
         let mounted = true;
-
+    
         async function fetchAdminData() {
             setLoading(true);
             setError(null);
-
+    
             try {
-                // adjust endpoints if your backend uses different paths
                 const [statsRes, usersRes, hospitalsRes] = await Promise.allSettled([
-                    fetch("/api/admin/stats", { credentials: "include" }),
-                    fetch("/api/admin/users", { credentials: "include" }),
-                    fetch("/api/admin/hospitals", { credentials: "include" }),
+                    fetch(`${API_BASE}/api/admin/stats`, { credentials: "include" }),
+                    fetch(`${API_BASE}/api/admin/users`, { credentials: "include" }),
+                    fetch(`${API_BASE}/api/admin/hospitals`, { credentials: "include" }),
                 ]);
-
-                // metrics
+    
+                // ---------- METRICS ----------
                 if (statsRes.status === "fulfilled" && statsRes.value.ok) {
                     const statsJson = await statsRes.value.json();
-                    if (mounted && statsJson) {
-                        setMetrics({
-                            totalUsers: statsJson.totalUsers ?? DEFAULT_METRICS.totalUsers,
-                            activeDonors: statsJson.activeDonors ?? DEFAULT_METRICS.activeDonors,
-                            partnerHospitals: statsJson.partnerHospitals ?? DEFAULT_METRICS.partnerHospitals,
-                            livesConnected: statsJson.livesConnected ?? DEFAULT_METRICS.livesConnected,
-                        });
-                    }
+                    if (mounted) setMetrics(statsJson);
                 } else {
-                    // leave default metrics
-                    console.warn("Stats fetch failed, using defaults.");
+                    setError("Failed to load statistics from server.");
                 }
-
-                // users
+    
+                // ---------- USERS ----------
                 if (usersRes.status === "fulfilled" && usersRes.value.ok) {
                     const usersJson = await usersRes.value.json();
                     if (mounted && Array.isArray(usersJson.users)) {
                         setUsers(usersJson.users);
                     }
-                } else {
-                    console.warn("Users fetch failed, using sample users.");
                 }
-
-                // hospitals
+    
+                // ---------- HOSPITALS ----------
                 if (hospitalsRes.status === "fulfilled" && hospitalsRes.value.ok) {
                     const hospJson = await hospitalsRes.value.json();
                     if (mounted && Array.isArray(hospJson.hospitals)) {
                         setHospitals(hospJson.hospitals);
                     }
-                } else {
-                    console.warn("Hospitals fetch failed, using sample hospitals.");
                 }
+    
             } catch (err) {
                 console.error("Admin data fetch error:", err);
-                // if (mounted) setError("Failed to fetch admin data. Showing sample data.");
             } finally {
                 if (mounted) setLoading(false);
             }
         }
-
+    
         fetchAdminData();
-
-        return () => {
-            mounted = false;
-        };
+        return () => (mounted = false);
     }, []);
+    
 
     const handleLogout = () => {
         setUser(null);
@@ -160,12 +151,12 @@ export default function AdminDashboard({ user, setUser }) {
                         <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                             <Settings size={20} className="text-gray-600" />
                         </button>
-                        <button
+                        {/* <button
                             onClick={() => navigate("/")}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                         >
                             Home
-                        </button>
+                        </button> */}
                         
                         <button onClick={() => handleLogout()} className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-500 hover:text-white rounded-lg transition-colors font-medium text-sm">
                             <FaArrowRightFromBracket size={16} />

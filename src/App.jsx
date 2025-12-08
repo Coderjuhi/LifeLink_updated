@@ -33,7 +33,7 @@ const Loader = ({
     style={{ minHeight: containerHeight }}
   >
     <img
-      src="/src/assets/Loading Dots.gif"
+      src="/src/assets/Loading.gif"
       alt="Loading"
       style={{
         width: loaderWidth,

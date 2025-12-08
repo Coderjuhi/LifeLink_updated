@@ -54,7 +54,7 @@ const Navbar = ({ user, setUser }) => {
     }
   };
 
-  // ✅ Handle dashboard click
+  //  Handle dashboard click
   const handleDashboardClick = () => {
     if (!user) {
       navigate("/signin");
@@ -114,7 +114,7 @@ const Navbar = ({ user, setUser }) => {
             Contact Us
           </Link>
 
-          {/* ✅ Dashboard button (click protected) */}
+          {/* Dashboard button (click protected) */}
           <button
             onClick={handleDashboardClick}
             className={`relative font-medium transition-colors duration-300 ${
