@@ -1,4 +1,6 @@
 import { useState } from "react"
+import axios from "axios";
+
 import {
     Settings,
     Bell,
@@ -18,12 +20,13 @@ import { FaArrowRightFromBracket } from "react-icons/fa6"
 import { useNavigate } from "react-router"
 
 function DonorDashboard({ user, setUser }) {
-    const [isAvailable, setIsAvailable] = useState(false)
-    const [activeTab, setActiveTab] = useState("blood")
+    const [isAvailable, setIsAvailable] = useState(
+        user?.isActive === true || user?.isActive === "true"
+      );
+          const [activeTab, setActiveTab] = useState("blood")
     const [isModalOpen, setIsModalOpen] = useState(false)
     const navigate = useNavigate();
 
-    console.log("user is", user);
 
     const handleLogout = () => {
         setUser(null);
@@ -142,6 +145,33 @@ function DonorDashboard({ user, setUser }) {
         },
     ]
 
+    const updateAvailability = async () => {
+        try {
+          const newStatus = !isAvailable; // this is now boolean
+      
+          const res = await axios.put(
+            "http://localhost:5000/api/update-availability",
+            { availability: newStatus},
+            { withCredentials: true }
+          );
+      
+          setIsAvailable(res.data.user.availability);
+          const updatedUser = { ...user, availability: res.data.user.availability };
+          setUser(updatedUser);
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+          
+      
+        } catch (error) {
+          console.log("Error updating:", error.response?.data || error);
+        }
+      };
+      
+
+
+
+
+
+
     return (
         <>
             <nav className="fixed top-0 left-0 w-full h-16 bg-white/95 backdrop-blur-md text-gray-900 z-50 border-b border-gray-100 shadow-sm">
@@ -174,17 +204,19 @@ function DonorDashboard({ user, setUser }) {
                         >
                             Home
                         </button>
-                        
+
                         <button onClick={() => handleLogout()} className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-500 hover:text-white rounded-lg transition-colors font-medium text-sm">
                             <FaArrowRightFromBracket size={16} />
                             Logout
                         </button>
                         <button
-                            onClick={() => setIsAvailable(!isAvailable)}
+                            onClick={updateAvailability}
                             className={`px-4 py-1.5 rounded-full font-semibold text-sm transition-all duration-200 text-white ${isAvailable ? "bg-emerald-500 hover:bg-emerald-600" : "bg-gray-400 hover:bg-gray-500"}`}
                         >
                             {isAvailable ? "Available" : "Unavailable"}
                         </button>
+
+
                     </div>
                 </div>
             </nav>
@@ -207,13 +239,16 @@ function DonorDashboard({ user, setUser }) {
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => setIsAvailable(!isAvailable)}
-                                        className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${isAvailable ? "bg-emerald-500" : "bg-gray-300"}`}
+                                        onClick={updateAvailability}
+                                        className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${isAvailable ? "bg-emerald-500" : "bg-gray-300"
+                                            }`}
                                     >
                                         <div
-                                            className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${isAvailable ? "translate-x-6" : "translate-x-1"}`}
+                                            className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${isAvailable ? "translate-x-6" : "translate-x-1"
+                                                }`}
                                         ></div>
                                     </button>
+
                                 </div>
 
                                 <div
@@ -364,7 +399,7 @@ function DonorDashboard({ user, setUser }) {
                                 </div>
 
                                 <div className="space-y-3 mb-6 pb-6 border-b border-gray-100">
-                                <div className="flex justify-between text-sm">
+                                    <div className="flex justify-between text-sm">
                                         <span className="text-gray-600">Location</span>
                                         <span className="font-medium text-gray-900 capitalize">
                                             {user?.address || "Not specified"}
