@@ -1,7 +1,7 @@
 // File: App.jsx
 import React, { useState, useEffect } from "react";
 import {
-  HashRouter as Router,
+  BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -22,12 +22,11 @@ import Administrator from "./component/Administrator";
 import About from "./component/About";
 import Contact from "./component/Contact";
 
-// Loader component
 const Loader = ({
   message = "Loading...",
-  loaderWidth = "10rem",
-  loaderHeight = "10rem",
-  containerHeight = "100vh",
+  loaderWidth = "10rem", // default w-32 (128px)
+  loaderHeight = "10rem", // default h-32 (128px)
+  containerHeight = "100vh", // default full screen
 }) => (
   <div
     className="flex flex-col items-center justify-center bg-gradient-to-b from-red-50 to-white"
@@ -36,7 +35,10 @@ const Loader = ({
     <img
       src="/src/assets/Loading.gif"
       alt="Loading"
-      style={{ width: loaderWidth, height: loaderHeight }}
+      style={{
+        width: loaderWidth,
+        height: loaderHeight,
+      }}
       className="mb-6 object-contain"
     />
     <p className="text-gray-700 text-xl font-semibold tracking-wide animate-pulse">
@@ -44,6 +46,11 @@ const Loader = ({
     </p>
   </div>
 );
+
+
+ 
+
+
 
 // Layouts
 const MainLayout = ({ user, setUser }) => (
@@ -61,14 +68,14 @@ const BlankLayout = () => <Outlet />;
 // Protected routes
 const ProtectedRoute = ({ user, loading, children }) => {
   if (loading) return <Loader message="Checking session..." />;
-  if (!user) return <Navigate to="/#/signin" replace />;
+  if (!user) return <Navigate to="/signin" replace />;
   return children;
 };
 
 const RoleProtectedRoute = ({ user, loading, allowedRole, children }) => {
   if (loading) return <Loader message="Checking session..." />;
-  if (!user) return <Navigate to="/#/signin" replace />;
-  if (user.accountType !== allowedRole) return <Navigate to="/#" replace />;
+  if (!user) return <Navigate to="/signin" replace />;
+  if (user.accountType !== allowedRole) return <Navigate to="/" replace />;
   return children;
 };
 
@@ -168,7 +175,7 @@ function App() {
         />
 
         {/* Catch-All */}
-        <Route path="*" element={<Navigate to="/#" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
