@@ -93,10 +93,11 @@ export default function AdminDashboard({ user, setUser }) {
                 // ---------- USERS ----------
                 if (usersRes.status === "fulfilled" && usersRes.value.ok) {
                     const usersJson = await usersRes.value.json();
-                    if (mounted && Array.isArray(usersJson.users)) {
-                        setUsers(usersJson.users);
+                    if (mounted && Array.isArray(usersJson)) {
+                        setUsers(usersJson);
                     }
                 }
+                
     
                 // ---------- HOSPITALS ----------
                 if (hospitalsRes.status === "fulfilled" && hospitalsRes.value.ok) {
@@ -327,33 +328,66 @@ export default function AdminDashboard({ user, setUser }) {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-200">
-                                                {users.map((u, i) => (
-                                                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                                                        <td className="px-6 py-4">
-                                                            <div>
-                                                                <p className="font-medium text-gray-900 text-sm">{u.name}</p>
-                                                                <p className="text-xs text-gray-500">{u.email}</p>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">{u.role}</span>
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm text-gray-900">{u.bloodType}</td>
-                                                        <td className="px-6 py-4">
-                                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${u.status === "Active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"}`}>{u.status}</span>
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm text-gray-900">{u.joined}</td>
-                                                        <td className="px-6 py-4 text-sm text-gray-900">{u.donations}</td>
-                                                        <td className="px-6 py-4">
-                                                            <div className="flex gap-2">
-                                                                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"><Eye size={16} /></button>
-                                                                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"><Edit size={16} /></button>
-                                                                <button className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600"><Trash2 size={16} /></button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
+  {users.map((u, i) => (
+    <tr key={i} className="hover:bg-gray-50 transition-colors">
+      
+      {/* USER NAME + EMAIL */}
+      <td className="px-6 py-4">
+        <p className="font-medium text-gray-900 text-sm">{u.name}</p>
+        <p className="text-xs text-gray-500">{u.email}</p>
+      </td>
+
+      {/* ACCOUNT TYPE */}
+      <td className="px-6 py-4">
+        <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
+          {u.accountType}
+        </span>
+      </td>
+
+      {/* BLOOD TYPE */}
+      <td className="px-6 py-4 text-sm text-gray-900">
+        {u.bloodType || "-"}
+      </td>
+
+      {/* STATUS */}
+      <td className="px-6 py-4">
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-medium ${
+            u.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
+          }`}
+        >
+          {u.isActive ? "Active" : "Inactive"}
+        </span>
+      </td>
+
+      {/* JOIN DATE */}
+      <td className="px-6 py-4 text-sm text-gray-900">
+        {new Date(u.createdAt).toLocaleDateString("en-IN")}
+      </td>
+
+      {/* DONATIONS (YOU DON'T HAVE THIS FIELD YET) */}
+      <td className="px-6 py-4 text-sm text-gray-900">
+        {u.donations || "N/A"}
+      </td>
+
+      {/* ACTION BUTTONS */}
+      <td className="px-6 py-4">
+        <div className="flex gap-2">
+          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600">
+            <Eye size={16} />
+          </button>
+          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600">
+            <Edit size={16} />
+          </button>
+          <button className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600">
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
                                         </table>
                                     </div>
                                 </div>

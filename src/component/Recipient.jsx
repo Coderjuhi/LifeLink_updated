@@ -16,14 +16,15 @@ import {
     Activity,
     Clock,
     CheckCircle,
-    UsersRound
+    UsersRound,X
 } from "lucide-react"
 import { FaArrowRightFromBracket } from "react-icons/fa6"
 import { useNavigate } from "react-router"
 
 export default function RecipientDashboard({ user, setUser }) {
     const [activeTab, setActiveTab] = useState("blood")
-
+    const [searchQuery, setSearchQuery] = useState("");
+ 
     const requests = {
         organs: [
             {
@@ -62,8 +63,21 @@ export default function RecipientDashboard({ user, setUser }) {
             },
         ],
     }
+ // ACTIVE TAB SE REQUESTS
+ const activeRequestsData =
+ activeTab === "blood" ? requests.blood : requests.organs;
 
-    const activeRequests = [
+// SEARCH FILTER
+const filteredRequests = activeRequestsData.filter((req) => {
+ const q = searchQuery.toLowerCase();
+ return (
+     req.type.toLowerCase().includes(q) ||
+     req.hospital?.toLowerCase().includes(q) ||
+     req.center?.toLowerCase().includes(q) ||
+     req.distance?.toLowerCase().includes(q)
+ );
+});
+    const useractiveRequests = [
         {
             id: 1,
             icon: Heart,
@@ -210,86 +224,119 @@ export default function RecipientDashboard({ user, setUser }) {
                                 Send Emergency Request
                             </button>
                         </div>
-
-                        {/* Find Donors Section */}
                         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                                    <Search className="w-5 h-5 text-purple-600" />
+            
+            {/* Heading */}
+            <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                    <Search className="w-5 h-5 text-purple-600" />
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">Find Donors</h2>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-6">
+                Search for compatible blood and organ donors in your area
+            </p>
+
+            {/* Search Bar */}
+            <div className="flex flex-col md:flex-row gap-3 mb-6">
+  <div className="relative flex-1">
+    <input
+      type="text"
+      placeholder="Search by location, blood type, organ type..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="w-full px-4 py-3 pr-10 rounded-lg border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+    />
+
+    {/* Clear Button (X Icon) */}
+    {searchQuery && (
+      <button
+        onClick={() => setSearchQuery("")}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+      >
+        <X size={18} />
+      </button>
+    )}
+  </div>
+
+  <button className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-gray-900 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+    <Filter className="w-4 h-4" />
+    <span className="hidden sm:inline">Filters</span>
+  </button>
+</div>
+
+
+            {/* Tabs */}
+            <div className="flex gap-2 mb-6 border-b border-slate-200">
+                <button
+                    onClick={() => setActiveTab("blood")}
+                    className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${
+                        activeTab === "blood"
+                            ? "border-red-600 text-red-600"
+                            : "border-transparent text-gray-600 hover:text-gray-900"
+                    }`}
+                >
+                    Blood Donors
+                </button>
+
+                <button
+                    onClick={() => setActiveTab("organs")}
+                    className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${
+                        activeTab === "organs"
+                            ? "border-red-600 text-red-600"
+                            : "border-transparent text-gray-600 hover:text-gray-900"
+                    }`}
+                >
+                    Organ Donors
+                </button>
+            </div>
+
+            {/* Donor List */}
+            <div className="space-y-3">
+                {filteredRequests.length > 0 ? (
+                    filteredRequests.map((req, idx) => (
+                        <div
+                            key={idx}
+                            className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                                    <Heart className="w-5 h-5 text-red-600" />
                                 </div>
-                                <h2 className="text-lg font-bold text-gray-900">Find Donors</h2>
-                            </div>
-                            <p className="text-sm text-gray-600 mb-6">Search for compatible blood and organ donors in your area</p>
 
-                            {/* Search Bar */}
-                            <div className="flex flex-col md:flex-row gap-3 mb-6">
-                                <input
-                                    type="text"
-                                    placeholder="Search by location, blood type, organ type..."
-                                    className="flex-1 px-4 py-3 rounded-lg border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                />
-                                <button className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-gray-900 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
-                                    <Filter className="w-4 h-4" />
-                                    <span className="hidden sm:inline">Filters</span>
-                                </button>
-                            </div>
-
-                            {/* Tabs */}
-                            <div className="flex gap-2 mb-6 border-b border-slate-200">
-                                <button
-                                    onClick={() => setActiveTab("blood")}
-                                    className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === "blood"
-                                        ? "border-red-600 text-red-600"
-                                        : "border-transparent text-gray-600 hover:text-gray-900"
-                                        }`}
-                                >
-                                    Blood Donors
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab("organs")}
-                                    className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === "organs"
-                                        ? "border-red-600 text-red-600"
-                                        : "border-transparent text-gray-600 hover:text-gray-900"
-                                        }`}
-                                >
-                                    Organ Donors
-                                </button>
-                            </div>
-
-                            {/* Donor List */}
-                            <div className="space-y-3">
-                                {(activeTab === "blood" ? requests.blood : requests.organs).map((req, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                                                <Heart className="w-5 h-5 text-red-600" />
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-semibold text-gray-900">{req.type}</h3>
-                                                    <span
-                                                        className={`text-xs px-2 py-1 rounded-full font-medium ${req.urgency === "Critical" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
-                                                            }`}
-                                                    >
-                                                        {req.urgency}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-gray-600">
-                                                    {req.hospital || req.center} • {req.distance}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors text-sm">
-                                            Respond
-                                        </button>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-semibold text-gray-900">{req.type}</h3>
+                                        <span
+                                            className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                                req.urgency === "Critical"
+                                                    ? "bg-red-100 text-red-700"
+                                                    : "bg-amber-100 text-amber-700"
+                                            }`}
+                                        >
+                                            {req.urgency}
+                                        </span>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
 
+                                    <p className="text-sm text-gray-600">
+                                        {req.hospital || req.center} • {req.distance}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors text-sm">
+                                Respond
+                            </button>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-center text-gray-500 py-6 text-sm">
+                        No data found
+                    </p>
+                )}
+            </div>
+        </div>
                         {/* Active Requests */}
                         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
                             <div className="flex items-center gap-3 mb-6">
@@ -300,7 +347,7 @@ export default function RecipientDashboard({ user, setUser }) {
                             </div>
 
                             <div className="space-y-4">
-                                {activeRequests.map((req) => (
+                                {useractiveRequests.map((req) => (
                                     <div
                                         key={req.id}
                                         className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-slate-300 transition-all"
@@ -394,7 +441,7 @@ export default function RecipientDashboard({ user, setUser }) {
                             <div className="space-y-3 text-sm mb-6">
                                 <div className="flex justify-between">
                                     <span className="font-medium text-gray-700">Blood Type</span>
-                                    <span className="text-red-600 font-semibold">O+</span>
+                                    <span className="text-red-600 font-semibold"> {user ? user.bloodType : "unkown"}</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
                                     <span className="font-medium">Conditions</span>

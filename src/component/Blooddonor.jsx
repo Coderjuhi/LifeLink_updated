@@ -147,24 +147,27 @@ function DonorDashboard({ user, setUser }) {
 
     const updateAvailability = async () => {
         try {
-          const newStatus = !isAvailable; // this is now boolean
+          const newStatus = !isAvailable;
+      
+          setIsAvailable(newStatus);  // instant toggle
       
           const res = await axios.put(
             "http://localhost:5000/api/update-availability",
-            { availability: newStatus},
+            { availability: newStatus },
             { withCredentials: true }
           );
       
-          setIsAvailable(res.data.user.availability);
           const updatedUser = { ...user, availability: res.data.user.availability };
+      
           setUser(updatedUser);
           localStorage.setItem("user", JSON.stringify(updatedUser));
-          
       
         } catch (error) {
-          console.log("Error updating:", error.response?.data || error);
+          console.log(error);
+          setIsAvailable((prev) => !prev); // rollback if error
         }
       };
+      
       
 
 
