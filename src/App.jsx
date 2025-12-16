@@ -22,37 +22,14 @@ import Administrator from "./component/Administrator";
 import About from "./component/About";
 import Contact from "./component/Contact";
 
-const Loader = ({
-  message = "Loading...",
-  loaderWidth = "10rem", // default w-32 (128px)
-  loaderHeight = "10rem", // default h-32 (128px)
-  containerHeight = "100vh", // default full screen
-}) => (
-  <div
-    className="flex flex-col items-center justify-center bg-gradient-to-b from-red-50 to-white"
-    style={{ minHeight: containerHeight }}
-  >
-    <img
-      src="/src/assets/Loading.gif"
-      alt="Loading"
-      style={{
-        width: loaderWidth,
-        height: loaderHeight,
-      }}
-      className="mb-6 object-contain"
-    />
-    <p className="text-gray-700 text-xl font-semibold tracking-wide animate-pulse">
-      {message}
-    </p>
+// Loader
+const Loader = ({ message = "Loading..." }) => (
+  <div className="flex flex-col items-center justify-center min-h-screen">
+    <p className="text-xl font-semibold animate-pulse">{message}</p>
   </div>
 );
 
-
- 
-
-
-
-// Layouts
+// Layout
 const MainLayout = ({ user, setUser }) => (
   <>
     <Navbar user={user} setUser={setUser} />
@@ -63,9 +40,7 @@ const MainLayout = ({ user, setUser }) => (
   </>
 );
 
-const BlankLayout = () => <Outlet />;
-
-// Protected routes
+// Protected Routes
 const ProtectedRoute = ({ user, loading, children }) => {
   if (loading) return <Loader message="Checking session..." />;
   if (!user) return <Navigate to="/signin" replace />;
@@ -83,31 +58,33 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch logged-in user once on load
+ // Fetch logged-in user once on load
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data } = await API.get("/me", { withCredentials: true });
-        setUser(data.user);
-        localStorage.setItem("user", JSON.stringify(data.user));
-      } catch (err) {
-        console.error("Auth check failed:", err.response?.data || err.message);
-        setUser(null);
-        localStorage.removeItem("user");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, []);
+  //  Load cached user immediately (prevents toggle flip)
+  const cachedUser = localStorage.getItem("user");
+  if (cachedUser) {
+    setUser(JSON.parse(cachedUser));
+  }
 
-  // Keep user synced to localStorage
-  useEffect(() => {
-    if (user) localStorage.setItem("user", JSON.stringify(user));
-    else localStorage.removeItem("user");
-  }, [user]);
+  // Verify from backend
+  const fetchUser = async () => {
+    try {
+      const { data } = await API.get("/me", { withCredentials: true });
+      setUser(data.user);
+      localStorage.setItem("user", JSON.stringify(data.user));
+    } catch (err) {
+      console.error("Auth check failed:", err.response?.data || err.message);
+      setUser(null);
+      localStorage.removeItem("user");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (loading) return <Loader message="Loading, please wait..." />;
+  fetchUser();
+}, []);
+
+  if (loading) return <Loader message="Loading..." />;
 
   return (
     <Router>
@@ -121,15 +98,11 @@ function App() {
           <Route path="/signin" element={<Signin setUser={setUser} />} />
         </Route>
 
-        {/* Role-Protected Dashboards */}
+        {/* Role Dashboards */}
         <Route
           path="/dashboard/blood-donor"
           element={
-            <RoleProtectedRoute
-              user={user}
-              loading={loading}
-              allowedRole="donor"
-            >
+            <RoleProtectedRoute user={user} loading={loading} allowedRole="donor">
               <BloodDonor user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
@@ -138,11 +111,7 @@ function App() {
         <Route
           path="/dashboard/recipient"
           element={
-            <RoleProtectedRoute
-              user={user}
-              loading={loading}
-              allowedRole="recipient"
-            >
+            <RoleProtectedRoute user={user} loading={loading} allowedRole="recipient">
               <Recipient user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
@@ -151,11 +120,7 @@ function App() {
         <Route
           path="/dashboard/hospital"
           element={
-            <RoleProtectedRoute
-              user={user}
-              loading={loading}
-              allowedRole="hospital"
-            >
+            <RoleProtectedRoute user={user} loading={loading} allowedRole="hospital">
               <Hospital user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
@@ -164,17 +129,13 @@ function App() {
         <Route
           path="/dashboard/admin"
           element={
-            <RoleProtectedRoute
-              user={user}
-              loading={loading}
-              allowedRole="admin"
-            >
+            <RoleProtectedRoute user={user} loading={loading} allowedRole="admin">
               <Administrator user={user} setUser={setUser} />
             </RoleProtectedRoute>
           }
         />
 
-        {/* Catch-All */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

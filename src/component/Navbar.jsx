@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FaHeartbeat } from "react-icons/fa";
 
+
 const Navbar = ({ user, setUser }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,7 +31,7 @@ const Navbar = ({ user, setUser }) => {
     setMenuOpen(false);
   };
 
-  const handleLogout = () => {
+ const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("user");
     setDropdownOpen(false);

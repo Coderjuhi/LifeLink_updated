@@ -47,7 +47,7 @@ const About = () => {
   return (
     <>
       <section className="max-w-7xl mx-auto p-6 pt-20">
-  <div className="bg-gradient-to-r from-red-400 via-red-300 to-red-400 shadow-lg overflow-hidden flex flex-col items-center justify-center min-h-[40vh] text-center px-4 py-10 rounded-xl">
+  <div className="bg-linear-to-r from-red-400 via-red-300 to-red-400 shadow-lg overflow-hidden flex flex-col items-center justify-center min-h-[40vh] text-center px-4 py-10 rounded-xl">
     <h3 className="text-2xl md:text-3xl font-bold mb-6 text-red-500 ">
       Who We Are?
     </h3>

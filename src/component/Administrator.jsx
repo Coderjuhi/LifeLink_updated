@@ -70,18 +70,18 @@ export default function AdminDashboard({ user, setUser }) {
 
     useEffect(() => {
         let mounted = true;
-    
+
         async function fetchAdminData() {
             setLoading(true);
             setError(null);
-    
+
             try {
                 const [statsRes, usersRes, hospitalsRes] = await Promise.allSettled([
                     fetch(`${API_BASE}/api/admin/stats`, { credentials: "include" }),
                     fetch(`${API_BASE}/api/admin/users`, { credentials: "include" }),
                     fetch(`${API_BASE}/api/admin/hospitals`, { credentials: "include" }),
                 ]);
-    
+
                 // ---------- METRICS ----------
                 if (statsRes.status === "fulfilled" && statsRes.value.ok) {
                     const statsJson = await statsRes.value.json();
@@ -89,7 +89,7 @@ export default function AdminDashboard({ user, setUser }) {
                 } else {
                     setError("Failed to load statistics from server.");
                 }
-    
+
                 // ---------- USERS ----------
                 if (usersRes.status === "fulfilled" && usersRes.value.ok) {
                     const usersJson = await usersRes.value.json();
@@ -97,8 +97,8 @@ export default function AdminDashboard({ user, setUser }) {
                         setUsers(usersJson);
                     }
                 }
-                
-    
+
+
                 // ---------- HOSPITALS ----------
                 if (hospitalsRes.status === "fulfilled" && hospitalsRes.value.ok) {
                     const hospJson = await hospitalsRes.value.json();
@@ -106,24 +106,27 @@ export default function AdminDashboard({ user, setUser }) {
                         setHospitals(hospJson.hospitals);
                     }
                 }
-    
+
             } catch (err) {
                 console.error("Admin data fetch error:", err);
             } finally {
                 if (mounted) setLoading(false);
             }
         }
-    
+
         fetchAdminData();
         return () => (mounted = false);
     }, []);
-    
+
 
     const handleLogout = () => {
         setUser(null);
         localStorage.removeItem("user");
         navigate("/", { replace: true });
     };
+    const activeDonorsCount = users.filter(
+        u => u.accountType === "donor" && u.availability === true
+    ).length;
 
     return (
         <>
@@ -158,7 +161,7 @@ export default function AdminDashboard({ user, setUser }) {
                         >
                             Home
                         </button> */}
-                        
+
                         <button onClick={() => handleLogout()} className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-red-600 hover:bg-red-500 hover:text-white rounded-lg transition-colors font-medium text-sm">
                             <FaArrowRightFromBracket size={16} />
                             Logout
@@ -195,8 +198,8 @@ export default function AdminDashboard({ user, setUser }) {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`flex items-center gap-2 px-4 py-3 font-medium whitespace-nowrap border-b-2 transition-all ${activeTab === tab.id
-                                                ? "border-red-600 text-red-600"
-                                                : "border-transparent text-gray-600 hover:text-gray-900"
+                                            ? "border-red-600 text-red-600"
+                                            : "border-transparent text-gray-600 hover:text-gray-900"
                                             }`}
                                     >
                                         {tab.icon}
@@ -211,7 +214,7 @@ export default function AdminDashboard({ user, setUser }) {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                         {[
                                             { label: "Total Users", value: metrics.totalUsers, icon: Users, color: "purple" },
-                                            { label: "Active Donors", value: metrics.activeDonors, icon: Heart, color: "red" },
+                                            { label: "Active Donors", value: activeDonorsCount, icon: Heart, color: "red" },
                                             { label: "Partner Hospitals", value: metrics.partnerHospitals, icon: Building2, color: "green" },
                                             { label: "Lives Connected", value: metrics.livesConnected, icon: TrendingUp, color: "teal" },
                                         ].map((metric, i) => {
@@ -328,65 +331,68 @@ export default function AdminDashboard({ user, setUser }) {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-200">
-  {users.map((u, i) => (
-    <tr key={i} className="hover:bg-gray-50 transition-colors">
-      
-      {/* USER NAME + EMAIL */}
-      <td className="px-6 py-4">
-        <p className="font-medium text-gray-900 text-sm">{u.name}</p>
-        <p className="text-xs text-gray-500">{u.email}</p>
-      </td>
+                                                {users.map((u, i) => (
+                                                    <tr key={i} className="hover:bg-gray-50 transition-colors">
 
-      {/* ACCOUNT TYPE */}
-      <td className="px-6 py-4">
-        <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
-          {u.accountType}
-        </span>
-      </td>
+                                                        {/* USER NAME + EMAIL */}
+                                                        <td className="px-6 py-4">
+                                                            <p className="font-medium text-gray-900 text-sm">{u.name}</p>
+                                                            <p className="text-xs text-gray-500">{u.email}</p>
+                                                        </td>
 
-      {/* BLOOD TYPE */}
-      <td className="px-6 py-4 text-sm text-gray-900">
-        {u.bloodType || "-"}
-      </td>
+                                                        {/* ACCOUNT TYPE */}
+                                                        <td className="px-6 py-4">
+                                                            <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
+                                                                {u.accountType}
+                                                            </span>
+                                                        </td>
 
-      {/* STATUS */}
-      <td className="px-6 py-4">
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-medium ${
-            u.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
-          }`}
-        >
-          {u.isActive ? "Active" : "Inactive"}
-        </span>
-      </td>
+                                                        {/* BLOOD TYPE */}
+                                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                                            {u.bloodType || "-"}
+                                                        </td>
 
-      {/* JOIN DATE */}
-      <td className="px-6 py-4 text-sm text-gray-900">
-        {new Date(u.createdAt).toLocaleDateString("en-IN")}
-      </td>
+                                                        {/* STATUS */}
+                                                        <td className="px-6 py-4">
+                                                            <span
+                                                                className={`px-3 py-1 rounded-full text-xs font-medium ${u.availability
+                                                                    ? "bg-green-100 text-green-700"
+                                                                    : "bg-gray-100 text-gray-700"
+                                                                    }`}
+                                                            >
+                                                                {u.availability ? "Available" : "Unavailable"}
+                                                            </span>
 
-      {/* DONATIONS (YOU DON'T HAVE THIS FIELD YET) */}
-      <td className="px-6 py-4 text-sm text-gray-900">
-        {u.donations || "N/A"}
-      </td>
 
-      {/* ACTION BUTTONS */}
-      <td className="px-6 py-4">
-        <div className="flex gap-2">
-          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600">
-            <Eye size={16} />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600">
-            <Edit size={16} />
-          </button>
-          <button className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600">
-            <Trash2 size={16} />
-          </button>
-        </div>
-      </td>
-    </tr>
-  ))}
-</tbody>
+                                                        </td>
+
+                                                        {/* JOIN DATE */}
+                                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                                            {new Date(u.createdAt).toLocaleDateString("en-IN")}
+                                                        </td>
+
+                                                        {/* DONATIONS (YOU DON'T HAVE THIS FIELD YET) */}
+                                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                                            {u.donations || "N/A"}
+                                                        </td>
+
+                                                        {/* ACTION BUTTONS */}
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex gap-2">
+                                                                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600">
+                                                                    <Eye size={16} />
+                                                                </button>
+                                                                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600">
+                                                                    <Edit size={16} />
+                                                                </button>
+                                                                <button className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600">
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
 
                                         </table>
                                     </div>

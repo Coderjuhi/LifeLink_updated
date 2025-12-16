@@ -13,35 +13,44 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
 
+  
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (password.length < 6) {
-      alert('Password must be at least 6 characters');
-      return;
+  if (password.length < 6) {
+    alert("Password must be at least 6 characters");
+    return;
+  }
+
+  try {
+    const res = await api.post("/login", { email, password });
+
+    alert("Login Successful");
+
+    // FIX: convert backend field → frontend field
+    const fixedUser = {
+      ...res.data.user,
+      isActive: res.data.user.availability   // UI expects this
+    };
+
+    // Save fixed user
+    localStorage.setItem("user", JSON.stringify(fixedUser));
+    setUser(fixedUser);
+
+    // Redirect based on role
+    if (fixedUser.accountType === "admin") {
+      navigate("/dashboard/admin");
+    } else {
+      navigate("/");
     }
+  } catch (error) {
+    alert(error.response?.data?.message || "Login failed");
+  }
+};
 
-    try {
-      const res = await api.post("/login", { email, password });
-
-      alert("Login Successful");
-
-      //  Save user info in localStorage + App state
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      setUser(res.data.user);
-
-      if (res.data.user.accountType === "admin") {
-        navigate("/dashboard/admin");  // direct to admin dashboard
-      } else {
-        navigate("/");       // normal user → home
-      }
-    } catch (error) {
-      alert(error.response?.data?.message || "Login failed ");
-    }
-  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-pink-50 to-pink-100 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-linear-to-r from-pink-50 to-pink-100 flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-pink-200">
         <div className="p-8 text-center">
           <BiSolidHeartCircle size={32} className="text-purple-800 inline mb-2" />

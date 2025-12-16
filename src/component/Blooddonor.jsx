@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import axios from "axios";
 
 import {
@@ -20,10 +20,19 @@ import { FaArrowRightFromBracket } from "react-icons/fa6"
 import { useNavigate } from "react-router"
 
 function DonorDashboard({ user, setUser }) {
-    const [isAvailable, setIsAvailable] = useState(
-        user?.isActive === true || user?.isActive === "true"
-      );
-          const [activeTab, setActiveTab] = useState("blood")
+    const [isAvailable, setIsAvailable] = useState(false);
+
+    // Now the toggle never flips wrongly on refresh
+    useEffect(() => {
+        if (typeof user?.availability === "boolean") {
+            setIsAvailable(user.availability);
+        }
+    }, [user]);
+
+
+
+
+    const [activeTab, setActiveTab] = useState("blood")
     const [isModalOpen, setIsModalOpen] = useState(false)
     const navigate = useNavigate();
 
@@ -147,33 +156,29 @@ function DonorDashboard({ user, setUser }) {
 
     const updateAvailability = async () => {
         try {
-          const newStatus = !isAvailable;
-      
-          setIsAvailable(newStatus);  // instant toggle
-      
-          const res = await axios.put(
-            "http://localhost:5000/api/update-availability",
-            { availability: newStatus },
-            { withCredentials: true }
-          );
-      
-          const updatedUser = { ...user, availability: res.data.user.availability };
-      
-          setUser(updatedUser);
-          localStorage.setItem("user", JSON.stringify(updatedUser));
-      
-        } catch (error) {
-          console.log(error);
-          setIsAvailable((prev) => !prev); // rollback if error
+            const newStatus = !isAvailable;
+
+            // instant UI update
+            setIsAvailable(newStatus);
+
+            const res = await axios.put(
+                "http://localhost:5000/api/update-availability",
+                { availability: newStatus },
+                { withCredentials: true }
+            );
+
+            const updatedUser = {
+                ...user,
+                availability: res.data.user.availability,
+            };
+
+            setUser(updatedUser);
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+        } catch (err) {
+            console.error(err);
+            setIsAvailable(prev => !prev); // rollback if failed
         }
-      };
-      
-      
-
-
-
-
-
+    };
 
     return (
         <>
@@ -214,10 +219,15 @@ function DonorDashboard({ user, setUser }) {
                         </button>
                         <button
                             onClick={updateAvailability}
-                            className={`px-4 py-1.5 rounded-full font-semibold text-sm transition-all duration-200 text-white ${isAvailable ? "bg-emerald-500 hover:bg-emerald-600" : "bg-gray-400 hover:bg-gray-500"}`}
+                            className={`px-4 py-1.5 rounded-full font-semibold text-sm text-white ${isAvailable
+                                ? "bg-emerald-500 hover:bg-emerald-600"
+                                : "bg-gray-400 hover:bg-gray-500"
+                                }`}
                         >
                             {isAvailable ? "Available" : "Unavailable"}
                         </button>
+
+
 
 
                     </div>
@@ -413,7 +423,7 @@ function DonorDashboard({ user, setUser }) {
                                         <span className="font-medium text-gray-900 capitalize">{user ? user.memberSince : "Sep 21, 2025"}</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600 capitalize">{user ? user.accounType : "unkown"}</span>
+                                        <span className="text-gray-600 capitalize">{user ? user.accountType : "unkown"}</span>
                                         <span className="flex items-center gap-1 font-medium text-emerald-600">
                                             <CheckCircle size={14} /> Registered
                                         </span>
