@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import { FaArrowRightFromBracket } from "react-icons/fa6"
 import { useNavigate } from "react-router";
+import API from "../api/api";
 
 export default function HospitalDashboard({ user, setUser }) {
     const [activeTab, setActiveTab] = useState("overview")
@@ -112,11 +113,23 @@ export default function HospitalDashboard({ user, setUser }) {
                 return "bg-blue-500"
         }
     }
-    const handleLogout = () => {
-        setUser(null);
-        localStorage.removeItem("user");
-        navigate("/", { replace: true });
-    };
+   const handleLogout = async () => {
+  try {
+    // Destroy backend session
+    await API.post("/logout", {}, { withCredentials: true });
+  } catch (err) {
+    console.error("Logout failed", err);
+  } finally {
+    // Clear frontend auth
+    localStorage.removeItem("user");
+    setUser(null);
+    setDropdownOpen(false);
+
+    // Hard redirect to reset app state
+    window.location.href = "/";
+  }
+};
+
 
 
     return (

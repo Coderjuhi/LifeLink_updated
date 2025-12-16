@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import { FaArrowRightFromBracket } from "react-icons/fa6"
 import { useNavigate } from "react-router"
+import API from "../api/api";
 
 function DonorDashboard({ user, setUser }) {
     const [isAvailable, setIsAvailable] = useState(false);
@@ -37,11 +38,22 @@ function DonorDashboard({ user, setUser }) {
     const navigate = useNavigate();
 
 
-    const handleLogout = () => {
-        setUser(null);
-        localStorage.removeItem("user");
-        navigate("/", { replace: true });
-    };
+ const handleLogout = async () => {
+  try {
+    // Destroy backend session
+    await API.post("/logout", {}, { withCredentials: true });
+  } catch (err) {
+    console.error("Logout failed", err);
+  } finally {
+    // Clear frontend auth
+    localStorage.removeItem("user");
+    setUser(null);
+    setDropdownOpen(false);
+
+    // Hard redirect to reset app state
+    window.location.href = "/";
+  }
+};
 
     const requests = {
         organs: [

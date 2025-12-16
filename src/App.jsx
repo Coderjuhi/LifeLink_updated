@@ -58,22 +58,16 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
- // Fetch logged-in user once on load
-  useEffect(() => {
-  //  Load cached user immediately (prevents toggle flip)
-  const cachedUser = localStorage.getItem("user");
-  if (cachedUser) {
-    setUser(JSON.parse(cachedUser));
-  }
-
-  // Verify from backend
+ useEffect(() => {
   const fetchUser = async () => {
     try {
+      // Always trust backend session
       const { data } = await API.get("/me", { withCredentials: true });
+
       setUser(data.user);
       localStorage.setItem("user", JSON.stringify(data.user));
     } catch (err) {
-      console.error("Auth check failed:", err.response?.data || err.message);
+      //  Not logged in
       setUser(null);
       localStorage.removeItem("user");
     } finally {
@@ -83,6 +77,7 @@ function App() {
 
   fetchUser();
 }, []);
+
 
   if (loading) return <Loader message="Loading..." />;
 

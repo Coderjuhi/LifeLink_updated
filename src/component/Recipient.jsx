@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import { FaArrowRightFromBracket } from "react-icons/fa6"
 import { useNavigate } from "react-router"
+import API from "../api/api"
 
 export default function RecipientDashboard({ user, setUser }) {
     const [activeTab, setActiveTab] = useState("blood")
@@ -126,11 +127,23 @@ const filteredRequests = activeRequestsData.filter((req) => {
     ]
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        setUser(null);
-        localStorage.removeItem("user");
-        navigate("/", { replace: true });
-    };
+  const handleLogout = async () => {
+  try {
+    //  Destroy backend session
+    await API.post("/logout", {}, { withCredentials: true });
+  } catch (err) {
+    console.error("Logout failed", err);
+  } finally {
+    //  Clear frontend auth
+    localStorage.removeItem("user");
+    setUser(null);
+    setDropdownOpen(false);
+
+    //  Hard redirect to reset app state
+    window.location.href = "/";
+  }
+};
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 pt-12">

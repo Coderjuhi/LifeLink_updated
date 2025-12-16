@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FaHeartbeat } from "react-icons/fa";
-
+import API from "../api/api";
 
 const Navbar = ({ user, setUser }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -31,14 +31,25 @@ const Navbar = ({ user, setUser }) => {
     setMenuOpen(false);
   };
 
- const handleLogout = () => {
-    setUser(null);
+const handleLogout = async () => {
+  try {
+    //  Destroy backend session
+    await API.post("/logout", {}, { withCredentials: true });
+  } catch (err) {
+    console.error("Logout failed", err);
+  } finally {
+    //  Clear frontend auth
     localStorage.removeItem("user");
+    setUser(null);
     setDropdownOpen(false);
-    navigate("/signin", { replace: true });
-  };
 
-  // ✅ Get dashboard route based on accountType
+    //  Hard redirect to reset app state
+    window.location.href = "/";
+  }
+};
+
+
+  //  Get dashboard route based on accountType
   const getDashboardPath = () => {
     if (!user) return null;
     switch (user.accountType) {
