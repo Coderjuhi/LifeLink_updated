@@ -32,6 +32,7 @@ const Home = () => {
     ];
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+
     return (
 
 
@@ -89,7 +90,7 @@ const Home = () => {
                             <p className="text-gray-600">Lives Connected</p>
                         </div>
                         <div>
-                            <h2 className="text-3xl font-bold text-purple-700">1,203</h2>
+                            <h2 className="text-3xl font-bold text-purple-700 value: activeDonorsCount">1,203</h2>
                             <p className="text-gray-600">Active Donors</p>
                         </div>
                         <div>

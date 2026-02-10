@@ -21,6 +21,9 @@ import Hospital from "./component/Hospital";
 import Administrator from "./component/Administrator";
 import About from "./component/About";
 import Contact from "./component/Contact";
+import ForgotPassword from "./component/ForgotPassword";
+import ResetPassword from "./component/ResetPassword";
+
 
 // Loader
 const Loader = ({ message = "Loading..." }) => (
@@ -91,6 +94,10 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/signup" element={<Signup setUser={setUser} />} />
           <Route path="/signin" element={<Signin setUser={setUser} />} />
+
+          
+  <Route path="/forgot-password" element={<ForgotPassword />} />
+  <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
 
         {/* Role Dashboards */}

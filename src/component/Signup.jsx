@@ -4,6 +4,9 @@ import { FaRegEyeSlash } from "react-icons/fa";
 import { IoEyeOutline } from "react-icons/io5";
 import { useNavigate, Link } from 'react-router-dom';
 import API from '../api/api';
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { auth } from "../firebase";
+
 
 export default function Signup({ setUser }) {
   const navigate = useNavigate();
@@ -47,33 +50,40 @@ export default function Signup({ setUser }) {
 
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const { name, email, phone, address, password, confirmPassword, accountType, bloodType } = form;
+  const { name, email, phone, address, password, confirmPassword, accountType, bloodType } = form;
 
-    if (password.length < 6) return alert('Password must be at least 6 characters');
-    if (password !== confirmPassword) return alert('Passwords do not match');
+  if (password.length < 6) return alert('Password must be at least 6 characters');
+  if (password !== confirmPassword) return alert('Passwords do not match');
 
-    try {
-      const { data } = await API.post("/signup", {
-        name,
-        email,
-        phone,
-        address,
-        password,
-        accountType,
-        bloodType
-      });
+  try {
+    //  Create user in Firebase
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-      alert("Signup Successful!");
+    //  Send verification email
+    await sendEmailVerification(userCredential.user);
 
-      navigate("/signin");
+    // // //  Save extra data in your backend (optional but recommended)
+    // await API.post("/signup", {
+    //   name,
+    //   email,
+    //   phone,
+    //   address,
+    //   accountType,
+    //   bloodType
+    // });
 
-    } catch (err) {
-      console.error("Signup error:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "Signup failed, try again.");
-    }
-  };
+    alert("Verification email sent! Please verify before login.");
+
+    navigate("/signin");
+
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-pink-50 to-pink-100 flex items-start justify-center p-6 pt-24">

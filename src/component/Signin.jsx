@@ -4,7 +4,8 @@ import { FaRegEyeSlash } from "react-icons/fa";
 import { IoEyeOutline } from "react-icons/io5";
 import { useNavigate, Link } from 'react-router-dom';
 import api from "../api/api";
-
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 export default function Signin({ setUser }) {   //  accept setUser from App.jsx
   const [email, setEmail] = useState('');
@@ -12,8 +13,9 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  
   const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -23,28 +25,56 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
   }
 
   try {
-    const res = await api.post("/login", { email, password });
+    setLoading(true);
+    setErrorMsg("");
 
-    alert("Login Successful");
+    // 1️⃣ Login with Firebase
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const firebaseUser = userCredential.user;
 
-    // FIX: convert backend field → frontend field
+    //  Check email verification
+    if (!firebaseUser.emailVerified) {
+      setErrorMsg("Please verify your email before logging in.");
+      return;
+    }
+
+    //  (Optional) Get user profile from backend
+    // Your backend should return user by email
+    const res = await api.get(`/user-by-email?email=${email}`);
+
     const fixedUser = {
       ...res.data.user,
-      isActive: res.data.user.availability   // UI expects this
+      isActive: res.data.user.availability
     };
 
-    // Save fixed user
-    localStorage.setItem("user", JSON.stringify(fixedUser));
+    //  Save user (remember me logic)
+    if (rememberMe) {
+      localStorage.setItem("user", JSON.stringify(fixedUser));
+    } else {
+      sessionStorage.setItem("user", JSON.stringify(fixedUser));
+    }
+
     setUser(fixedUser);
 
-    // Redirect based on role
+    // Redirect
     if (fixedUser.accountType === "admin") {
       navigate("/dashboard/admin");
     } else {
       navigate("/");
     }
+
   } catch (error) {
-    alert(error.response?.data?.message || "Login failed");
+    console.error(error);
+
+    if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
+      setErrorMsg("Invalid email or password");
+    } else if (error.code === "auth/too-many-requests") {
+      setErrorMsg("Too many attempts. Try again later.");
+    } else {
+      setErrorMsg(error.message || "Login failed");
+    }
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -59,7 +89,7 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
           <p className="text-sm text-gray-500 mt-1 mb-4">Sign in to your LifeLink account</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <input 
+            <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -69,7 +99,7 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
             />
 
             <div className="relative">
-              <input 
+              <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
@@ -77,7 +107,7 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
                 required
                 className="w-full rounded-lg border border-gray-200 px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-pink-200"
               />
-              
+
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -86,8 +116,8 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
                 {showPassword ? <IoEyeOutline /> : <FaRegEyeSlash />}
               </button>
             </div>
-              
-             {/* Remember Me + Forgot Password Row */}
+
+            {/* Remember Me + Forgot Password Row */}
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 text-gray-600">
                 <input
@@ -105,13 +135,17 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
               >
                 Forgot Password?
               </Link>
-            </div> 
-            <button
-              type="submit"
-              className="w-full bg-purple-800 hover:bg-purple-900 text-white rounded-lg py-3 font-medium shadow-sm transition"
-            >
-              Sign In
-            </button>
+            </div>
+            {/* ERROR MESSAGE */}
+            {errorMsg && (
+              <p className="text-red-500 text-sm text-left">{errorMsg}</p>)}
+            <button type="submit"
+              disabled={loading}
+              className={`w-full text-white rounded-lg py-3 font-medium shadow-sm transition 
+         ${loading
+                  ? "bg-purple-400 cursor-not-allowed"
+                  : "bg-purple-800 hover:bg-purple-900"}`} >
+              {loading ? "Signing in..." : "Sign In"} </button>
           </form>
 
           <p className="mt-5 text-sm text-gray-600">
