@@ -25,6 +25,9 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
   }
 
   try {
+     const res = await api.post("/login", { email, password });
+
+    alert("Login Successful");
     setLoading(true);
     setErrorMsg("");
 
@@ -40,7 +43,6 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
 
     //  (Optional) Get user profile from backend
     // Your backend should return user by email
-    const res = await api.get(`/user-by-email?email=${email}`);
 
     const fixedUser = {
       ...res.data.user,
