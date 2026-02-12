@@ -54,8 +54,11 @@ export default function Signup({ setUser }) {
 
   const { name, email, phone, address, password, confirmPassword, accountType, bloodType } = form;
 
-  if (password.length < 6) return alert('Password must be at least 6 characters');
-  if (password !== confirmPassword) return alert('Passwords do not match');
+  if (password.length < 6)
+     return alert('Password must be at least 6 characters');
+
+  if (password !== confirmPassword)
+     return alert('Passwords do not match');
 
   try {
     //  Create user in Firebase
@@ -64,23 +67,30 @@ export default function Signup({ setUser }) {
     //  Send verification email
     await sendEmailVerification(userCredential.user);
 
-    // // //  Save extra data in your backend (optional but recommended)
-    // await API.post("/signup", {
-    //   name,
-    //   email,
-    //   phone,
-    //   address,
-    //   accountType,
-    //   bloodType
-    // });
 
-    alert("Verification email sent! Please verify before login.");
+    //  Save extra data in your backend (optional but recommended)
+  await API.post("/signup", {
+  firebaseUid: userCredential.user.uid,  // 👈 add this
+  name,
+  email,
+  password,
+  phone,
+  address,
+  accountType,
+  bloodType
+});
+    alert("Account created! Please verify your email before login.");
 
     navigate("/signin");
 
   } catch (err) {
-    console.error(err);
-    alert(err.message);
+    console.error("Signup error:", err);
+
+    if (err.code === "auth/email-already-in-use") {
+      alert("This email is already registered.");
+    } else {
+      alert(err.response?.data?.message || err.message || "Signup failed");
+    }
   }
 };
 

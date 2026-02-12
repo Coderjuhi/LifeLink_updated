@@ -25,30 +25,39 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
   }
 
   try {
-     const res = await api.post("/login", { email, password });
-
-    alert("Login Successful");
+    
+    
     setLoading(true);
     setErrorMsg("");
-
-    // 1️⃣ Login with Firebase
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const firebaseUser = userCredential.user;
-
-    //  Check email verification
-    if (!firebaseUser.emailVerified) {
-      setErrorMsg("Please verify your email before logging in.");
-      return;
-    }
-
-    //  (Optional) Get user profile from backend
-    // Your backend should return user by email
+    const res = await api.post("/login", { email, password });
 
     const fixedUser = {
       ...res.data.user,
       isActive: res.data.user.availability
     };
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
+      if (!userCredential.user.emailVerified) {
+        setErrorMsg("Please verify your email before logging in.");
+        return;
+      }
+    } catch (fbError) {
+      //  If Firebase user doesn't exist → sync it
+      if (fbError.code === "auth/user-not-found") {
+        await api.post("/sync-firebase", { email });
+
+        // Try again
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        if (!userCredential.user.emailVerified) {
+          setErrorMsg("Please verify your email before logging in.");
+          return;
+        }
+      } else {
+        throw fbError;
+      }
+    }
     //  Save user (remember me logic)
     if (rememberMe) {
       localStorage.setItem("user", JSON.stringify(fixedUser));
@@ -68,13 +77,8 @@ export default function Signin({ setUser }) {   //  accept setUser from App.jsx
   } catch (error) {
     console.error(error);
 
-    if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
-      setErrorMsg("Invalid email or password");
-    } else if (error.code === "auth/too-many-requests") {
-      setErrorMsg("Too many attempts. Try again later.");
-    } else {
-      setErrorMsg(error.message || "Login failed");
-    }
+     console.error(error);
+    setErrorMsg(error.response?.data?.message || error.message || "Login failed");
   } finally {
     setLoading(false);
   }
