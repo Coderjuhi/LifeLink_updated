@@ -35,89 +35,84 @@ function DonorDashboard({ user, setUser }) {
 
     const [activeTab, setActiveTab] = useState("blood")
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [editModal, setEditModal] = useState(false);
+    const [editName, setEditName] = useState("");
+    const [editAddress, setEditAddress] = useState("");
+    const [bloodRequests, setBloodRequests] = useState([]);
+    const [organRequests, setOrganRequests] = useState([]);
     const navigate = useNavigate();
+    const [notificationOpen, setNotificationOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [darkMode, setDarkMode] = useState(false);
+
+    const notifications = [
+        {
+            id: 1,
+            message: "You have 1 new message",
+            time: "Just now"
+        }
+    ];
+    const toggleTheme = () => {
+        setDarkMode(!darkMode);
+
+        if (!darkMode) {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+    };
+
+    useEffect(() => {
+
+        const fetchRequests = async () => {
+            try {
+
+                const res = await API.get("/nearby-requests", {
+                    withCredentials: true
+                });
+
+                const allRequests = res.data.data;
 
 
- const handleLogout = async () => {
-  try {
-    // Destroy backend session
-    await API.post("/logout", {}, { withCredentials: true });
-  } catch (err) {
-    console.error("Logout failed", err);
-  } finally {
-    // Clear frontend auth
-    localStorage.removeItem("user");
-    setUser(null);
-    setDropdownOpen(false);
+                const blood = allRequests.filter(
+                    r => r.donorType === "Blood/Platelets"
+                );
 
-    // Hard redirect to reset app state
-    window.location.href = "/";
-  }
-};
+                const organs = allRequests.filter(
+                    r => r.donorType === "Organ Transplant"
+                );
 
-    const requests = {
-        organs: [
-            {
-                type: "Kidney",
-                urgency: "Critical",
-                match: "98%",
-                matchColor: "bg-emerald-100 text-emerald-700",
-                urgencyColor: "bg-red-500 text-white",
-                center: "Transplant Center",
-                distance: "1.5 mi",
-                time: "30 min ago",
-                waiting: "2 yrs",
-            },
-            {
-                type: "Liver (Living)",
-                urgency: "High",
-                match: "95%",
-                matchColor: "bg-emerald-100 text-emerald-700",
-                urgencyColor: "bg-orange-500 text-white",
-                center: "Medical Center",
-                distance: "3.2 mi",
-                time: "2 hrs ago",
-                waiting: "8 mo",
-            },
-            {
-                type: "Cornea",
-                urgency: "Medium",
-                match: "100%",
-                matchColor: "bg-emerald-100 text-emerald-700",
-                urgencyColor: "bg-slate-300 text-slate-700",
-                center: "Eye Institute",
-                distance: "4.1 mi",
-                time: "1 day ago",
-                waiting: "6 mo",
-            },
-        ],
-        blood: [
-            {
-                type: "O+",
-                urgency: "Critical",
-                urgencyColor: "bg-red-500 text-white",
-                hospital: "Emergency Hospital",
-                distance: "0.8 mi",
-                time: "2 min ago",
-            },
-            {
-                type: "O+",
-                urgency: "High",
-                urgencyColor: "bg-orange-500 text-white",
-                hospital: "City Medical",
-                distance: "1.2 mi",
-                time: "15 min ago",
-            },
-            {
-                type: "O-",
-                urgency: "Medium",
-                urgencyColor: "bg-slate-300 text-slate-700",
-                hospital: "General Hospital",
-                distance: "2.1 mi",
-                time: "1 hr ago",
-            },
-        ],
-    }
+
+                setBloodRequests(blood);
+                setOrganRequests(organs);
+
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
+        fetchRequests();
+
+    }, []);
+
+    const handleLogout = async () => {
+        try {
+            // Destroy backend session
+            await API.post("/logout", {}, { withCredentials: true });
+        } catch (err) {
+            console.error("Logout failed", err);
+        } finally {
+            // Clear frontend auth
+            localStorage.removeItem("user");
+            setUser(null);
+            setDropdownOpen(false);
+
+            // Hard redirect to reset app state
+            window.location.href = "/";
+        }
+    };
+
+
 
     const recentDonations = [
         {
@@ -192,6 +187,89 @@ function DonorDashboard({ user, setUser }) {
         }
     };
 
+    useEffect(() => {
+
+        const fetchRequests = async () => {
+            try {
+
+                const res = await API.get("/nearby-requests", {
+                    withCredentials: true
+                });
+
+                const allRequests = res.data.data;
+
+                const blood = allRequests.filter(r => r.donorType === "Blood/Platelets");
+                const organs = allRequests.filter(r => r.donorType === "Organ Transplant");
+
+                setBloodRequests(blood);
+                setOrganRequests(organs);
+
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
+        fetchRequests();
+
+    }, []);
+
+    const timeAgo = (date) => {
+        if (!date) return "";
+
+        const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+
+        const intervals = {
+            year: 31536000,
+            month: 2592000,
+            day: 86400,
+            hour: 3600,
+            minute: 60
+        };
+
+        for (let key in intervals) {
+            const interval = Math.floor(seconds / intervals[key]);
+
+            if (interval >= 1) {
+                return `${interval} ${key}${interval > 1 ? "s" : ""} ago`;
+            }
+        }
+
+        return "Just now";
+    };
+
+    const updateProfile = async () => {
+        try {
+
+            const res = await API.put(
+                "/update-profile",
+                {
+                    name: editName,
+                    address: editAddress
+                },
+                {
+                    withCredentials: true
+                }
+            );
+
+            const updatedUser = res.data.user;
+
+            setUser(updatedUser);
+
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+
+            setEditModal(false);
+
+            alert("Profile Updated");
+
+        } catch (err) {
+
+            console.log(err);
+
+            alert("Update Failed");
+
+        }
+    };
+
     return (
         <>
             <nav className="fixed top-0 left-0 w-full h-16 bg-white/95 backdrop-blur-md text-gray-900 z-50 border-b border-gray-100 shadow-sm">
@@ -212,10 +290,23 @@ function DonorDashboard({ user, setUser }) {
 
                     {/* Right Actions */}
                     <div className="flex items-center gap-3 md:gap-4">
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <button
+                            onClick={() => setNotificationOpen(prev => !prev)}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
+                        >
                             <Bell size={20} className="text-gray-600" />
+
+                            {/* Notification count */}
+                            {notifications.length > 0 && (
+                                <span className="absolute -top-1 -right-1 text-[10px] bg-red-600 text-white px-1.5 py-[1px] rounded-full font-semibold">
+                                    {notifications.length}
+                                </span>
+                            )}
                         </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <button
+                            onClick={() => setSettingsOpen(prev => !prev)}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
                             <Settings size={20} className="text-gray-600" />
                         </button>
                         <button
@@ -325,12 +416,15 @@ function DonorDashboard({ user, setUser }) {
 
                                 {/* Requests List */}
                                 <div className="space-y-3">
-                                    {(activeTab === "blood" ? requests.blood : requests.organs).map((req, idx) => (
+                                    {(activeTab === "blood" ? bloodRequests : organRequests).map((req, idx) => (
+
                                         <div
                                             key={idx}
                                             className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors border border-gray-100 group"
                                         >
+
                                             <div className="flex items-start gap-4 flex-1">
+
                                                 <div className={`p-2.5 rounded-lg ${activeTab === "blood" ? "bg-pink-100" : "bg-purple-100"}`}>
                                                     {activeTab === "blood" ? (
                                                         <Heart className="text-pink-600" size={20} />
@@ -338,28 +432,46 @@ function DonorDashboard({ user, setUser }) {
                                                         <Zap className="text-purple-600" size={20} />
                                                     )}
                                                 </div>
+
                                                 <div className="flex-1">
+
                                                     <div className="flex items-center gap-2 mb-1">
-                                                        <h3 className="font-semibold text-gray-900">{req.type}</h3>
-                                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${req.urgencyColor}`}>
-                                                            {req.urgency}
+
+                                                        <h3 className="font-semibold text-gray-900">
+                                                            {activeTab === "blood" ? req.bloodGrp : req.organType}
+                                                        </h3>
+
+                                                        <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-500 text-white">
+                                                            Emergency
                                                         </span>
-                                                        {activeTab === "organs" && (
-                                                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${req.matchColor}`}>
-                                                                {req.match} Match
-                                                            </span>
-                                                        )}
+
                                                     </div>
+
                                                     <p className="text-sm text-gray-600">
-                                                        {activeTab === "blood" ? req.hospital : req.center} • {req.distance}
+                                                        {req.sessionId?.address}
                                                     </p>
-                                                    <p className="text-xs text-gray-500 mt-1">{req.time}</p>
+
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        Recipient: {req.sessionId?.name}
+                                                    </p>
+
+                                                    {/* Live Time */}
+                                                    <p className="text-xs text-green-600 font-medium mt-1">
+                                                        {timeAgo(req.createdAt)}
+                                                    </p>
+
                                                 </div>
+
                                             </div>
-                                            <button className="ml-4 px-4 py-2 rounded-lg font-semibold text-white transition-all text-sm group-hover:scale-105 bg-red-600 hover:bg-red-700">
+
+                                            <button
+                                                className="ml-4 px-4 py-2 rounded-lg font-semibold text-white transition-all text-sm group-hover:scale-105 bg-red-600 hover:bg-red-700"
+                                            >
                                                 Respond
                                             </button>
+
                                         </div>
+
                                     ))}
                                 </div>
                             </section>
@@ -442,7 +554,14 @@ function DonorDashboard({ user, setUser }) {
                                     </div>
                                 </div>
 
-                                <button className="w-full px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                                <button
+                                    onClick={() => {
+                                        setEditModal(true);
+                                        setEditName(user?.name || "");
+                                        setEditAddress(user?.address || "");
+                                    }}
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                                >
                                     <Settings size={16} /> Edit Profile
                                 </button>
                             </section>
@@ -542,6 +661,61 @@ function DonorDashboard({ user, setUser }) {
                     </div>
                 </div>
             </main>
+            {/* /*****update model */}
+            {editModal && (
+
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+
+                    <div className="bg-white p-6 rounded-xl w-96">
+
+                        <h2 className="text-lg font-bold mb-4">
+                            Edit Profile
+                        </h2>
+
+                        <label className="block mb-2 text-sm">
+                            Name
+                        </label>
+
+                        <input
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="w-full border p-2 rounded mb-4"
+                        />
+
+                        <label className="block mb-2 text-sm">
+                            Location
+                        </label>
+
+                        <input
+                            value={editAddress}
+                            onChange={(e) => setEditAddress(e.target.value)}
+                            className="w-full border p-2 rounded mb-4"
+                        />
+                        <div className="flex gap-3">
+
+                            <button
+                                onClick={updateProfile}
+                                className="flex-1 bg-red-600 text-white p-2 rounded"
+                            >
+                                Save
+                            </button>
+
+                            <button
+                                onClick={() => setEditModal(false)}
+                                className="flex-1 bg-gray-300 p-2 rounded"
+                            >
+                                Cancel
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
+
+            \
 
             {/* Emergency Modal */}
             {isModalOpen && (
@@ -565,6 +739,104 @@ function DonorDashboard({ user, setUser }) {
                     </div>
                 </div>
             )}
+
+            {/* Notification Sidebar */}
+            <div
+                className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 
+  ${notificationOpen ? "translate-x-0" : "translate-x-full"}`}
+            >
+
+                {/* Header */}
+                <div className="flex items-center justify-between p-4 border-b">
+                    <h2 className="text-lg font-semibold">Notifications</h2>
+
+                    <button
+                        onClick={() => setNotificationOpen(false)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                    >
+                        <X size={22} />
+                    </button>
+                </div>
+
+                {/* Notification List */}
+                <div className="p-4 space-y-3">
+
+                    {notifications.map((n) => (
+                        <div
+                            key={n.id}
+                            className="p-4 bg-gray-50 rounded-lg border border-gray-100"
+                        >
+                            <p className="text-sm font-medium text-gray-800">
+                                {n.message}
+                            </p>
+
+                            <p className="text-xs text-gray-500 mt-1">
+                                {n.time}
+                            </p>
+                        </div>
+                    ))}
+
+                </div>
+            </div>
+            {/* Settings Sidebar */}
+            <div
+                className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 
+    ${settingsOpen ? "translate-x-0" : "translate-x-full"}`}
+            >
+
+                {/* Header */}
+                <div className="flex items-center justify-between p-4 border-b">
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <Settings size={20} /> Settings
+                    </h2>
+
+                    <button
+                        onClick={() => setSettingsOpen(false)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                    >
+                        <X size={22} />
+                    </button>
+                </div>
+
+                {/* Settings Options */}
+                <div className="p-4 space-y-4">
+
+                    {/* Theme Toggle */}
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-2">
+                            {darkMode ? "🌙" : "☀️"}
+                            <span className="text-sm font-medium">
+                                {darkMode ? "Dark Mode" : "Light Mode"}
+                            </span>
+                        </div>
+
+                        <button
+                            onClick={toggleTheme}
+                            className="px-3 py-1 bg-gray-200 rounded-lg text-sm"
+                        >
+                            Toggle
+                        </button>
+                    </div>
+
+                    {/* Brightness */}
+                    <div className="p-3 border rounded-lg">
+                        <p className="text-sm font-medium mb-2">Brightness</p>
+
+                        <input
+                            type="range"
+                            min="50"
+                            max="150"
+                            defaultValue="100"
+                            className="w-full"
+                            onChange={(e) => {
+                                document.body.style.filter = `brightness(${e.target.value}%)`;
+                            }}
+                        />
+                    </div>
+
+                </div>
+
+            </div>
         </>
     )
 }

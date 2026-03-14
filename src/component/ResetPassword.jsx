@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { auth } from "../firebase";
-import { confirmPasswordReset } from "firebase/auth";
+// import { auth } from "../firebase";
+// import { confirmPasswordReset } from "firebase/auth";
 
 export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("");
@@ -28,6 +28,38 @@ export default function ResetPassword() {
     }
   };
 
+    const updateProfile = async () => {
+try {
+
+const res = await API.put(
+"/update-profile",
+{
+name: editName,
+address: editAddress
+},
+{
+withCredentials:true
+}
+);
+
+const updatedUser = res.data.user;
+
+setUser(updatedUser);
+
+localStorage.setItem("user",JSON.stringify(updatedUser));
+
+setEditModal(false);
+
+alert("Profile Updated");
+
+} catch(err){
+
+console.log(err);
+
+alert("Update Failed");
+
+}
+    };
   return (
     <div className="min-h-screen flex items-center justify-center bg-pink-50">
       <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md">

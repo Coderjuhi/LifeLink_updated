@@ -1,4 +1,3 @@
-// File: App.jsx
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -18,6 +17,8 @@ import Footer from "./component/Footer";
 import BloodDonor from "./component/Blooddonor";
 import Recipient from "./component/Recipient";
 import Hospital from "./component/Hospital";
+import AdminLogin from "./component/AdminLogin";
+
 import Administrator from "./component/Administrator";
 import About from "./component/About";
 import Contact from "./component/Contact";
@@ -61,25 +62,25 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
- useEffect(() => {
-  const fetchUser = async () => {
-    try {
-      // Always trust backend session
-      const { data } = await API.get("/me", { withCredentials: true });
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        // Always trust backend session
+        const { data } = await API.get("/me", { withCredentials: true });
 
-      setUser(data.user);
-      localStorage.setItem("user", JSON.stringify(data.user));
-    } catch (err) {
-      //  Not logged in
-      setUser(null);
-      localStorage.removeItem("user");
-    } finally {
-      setLoading(false);
-    }
-  };
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      } catch (err) {
+        //  Not logged in
+        setUser(null);
+        localStorage.removeItem("user");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchUser();
-}, []);
+    fetchUser();
+  }, []);
 
 
   if (loading) return <Loader message="Loading..." />;
@@ -95,9 +96,9 @@ function App() {
           <Route path="/signup" element={<Signup setUser={setUser} />} />
           <Route path="/signin" element={<Signin setUser={setUser} />} />
 
-          
-  <Route path="/forgot-password" element={<ForgotPassword />} />
-  <Route path="/reset-password" element={<ResetPassword />} />
+
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
 
         {/* Role Dashboards */}
@@ -127,6 +128,8 @@ function App() {
             </RoleProtectedRoute>
           }
         />
+
+        <Route path="/admin" element={<AdminLogin setUser={setUser} />} />
 
         <Route
           path="/dashboard/admin"

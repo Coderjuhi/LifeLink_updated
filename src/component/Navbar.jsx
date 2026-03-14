@@ -31,22 +31,22 @@ const Navbar = ({ user, setUser }) => {
     setMenuOpen(false);
   };
 
-const handleLogout = async () => {
-  try {
-    //  Destroy backend session
-    await API.post("/logout", {}, { withCredentials: true });
-  } catch (err) {
-    console.error("Logout failed", err);
-  } finally {
-    //  Clear frontend auth
-    localStorage.removeItem("user");
-    setUser(null);
-    setDropdownOpen(false);
+  const handleLogout = async () => {
+    try {
+      //  Destroy backend session
+      await API.post("/logout", {}, { withCredentials: true });
+    } catch (err) {
+      console.error("Logout failed", err);
+    } finally {
+      //  Clear frontend auth
+      localStorage.removeItem("user");
+      setUser(null);
+      setDropdownOpen(false);
 
-    //  Hard redirect to reset app state
-    window.location.href = "/";
-  }
-};
+      //  Hard redirect to reset app state
+      window.location.href = "/";
+    }
+  };
 
 
   //  Get dashboard route based on accountType
@@ -92,51 +92,51 @@ const handleLogout = async () => {
 
         {/* Menu links */}
         <div
-          className={`md:flex items-center space-x-6 transition-transform duration-300 ease-in-out ${
-            menuOpen
+          className={`md:flex items-center space-x-6 transition-transform duration-300 ease-in-out ${menuOpen
               ? "fixed top-[65px] right-0 w-52 bg-white shadow-lg flex flex-col space-y-4 p-6 z-40 h-auto"
               : "hidden md:flex"
-          }`}
+            }`}
         >
           <Link
             to="/"
             onClick={() => handleLinkClick("home")}
-            className={`relative font-medium transition-colors duration-300 ${
-              activeLink === "home" ? "text-red-700" : "hover:text-red-700"
-            }`}
+            className={`relative font-medium transition-colors duration-300 ${activeLink === "home" ? "text-red-700" : "hover:text-red-700"
+              }`}
           >
             Home
           </Link>
           <Link
             to="/about"
             onClick={() => handleLinkClick("about")}
-            className={`relative font-medium transition-colors duration-300 ${
-              activeLink === "about" ? "text-red-700" : "hover:text-red-700"
-            }`}
+            className={`relative font-medium transition-colors duration-300 ${activeLink === "about" ? "text-red-700" : "hover:text-red-700"
+              }`}
           >
             About Us
           </Link>
           <Link
             to="/contact"
             onClick={() => handleLinkClick("contact")}
-            className={`relative font-medium transition-colors duration-300 ${
-              activeLink === "contact" ? "text-red-700" : "hover:text-red-700"
-            }`}
+            className={`relative font-medium transition-colors duration-300 ${activeLink === "contact" ? "text-red-700" : "hover:text-red-700"
+              }`}
           >
             Contact Us
           </Link>
 
-          {/* Dashboard button (click protected) */}
-          <button
-            onClick={handleDashboardClick}
-            className={`relative font-medium transition-colors duration-300 ${
-              activeLink === "dashboard"
-                ? "text-red-700"
-                : "hover:text-red-700"
-            }`}
-          >
-            Dashboard
-          </button>
+          {/* Dashboard button only if logged in */}
+          {user && (
+            <button
+              onClick={() => {
+                handleDashboardClick();
+                handleLinkClick("dashboard");
+              }}
+              className={`relative font-medium transition-colors duration-300 ${activeLink === "dashboard"
+                  ? "text-red-700"
+                  : "hover:text-red-700"
+                }`}
+            >
+              Dashboard
+            </button>
+          )}
         </div>
 
         {/* Hamburger menu (mobile) */}
