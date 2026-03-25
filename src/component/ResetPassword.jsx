@@ -5,7 +5,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -13,8 +15,19 @@ export default function ResetPassword() {
 
   const handleReset = async () => {
     try {
+
       if (!oobCode) {
         setError("Invalid or expired reset link");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        setError("Password must be at least 6 characters");
         return;
       }
 
@@ -22,51 +35,22 @@ export default function ResetPassword() {
 
       alert("Password updated successfully!");
       navigate("/signin");
+
     } catch (err) {
       console.error(err);
       setError("Failed to update password. Link may be expired.");
     }
   };
 
-    const updateProfile = async () => {
-try {
-
-const res = await API.put(
-"/update-profile",
-{
-name: editName,
-address: editAddress
-},
-{
-withCredentials:true
-}
-);
-
-const updatedUser = res.data.user;
-
-setUser(updatedUser);
-
-localStorage.setItem("user",JSON.stringify(updatedUser));
-
-setEditModal(false);
-
-alert("Profile Updated");
-
-} catch(err){
-
-console.log(err);
-
-alert("Update Failed");
-
-}
-    };
   return (
     <div className="min-h-screen flex items-center justify-center bg-pink-50">
       <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md">
+
         <h2 className="text-xl font-semibold mb-4 text-center">
           Reset Password
         </h2>
 
+        {/* New Password */}
         <input
           type="password"
           placeholder="New Password"
@@ -75,7 +59,18 @@ alert("Update Failed");
           onChange={(e) => setNewPassword(e.target.value)}
         />
 
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+        {/* Confirm Password */}
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          className="w-full border px-4 py-2 rounded mb-2"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+
+        {error && (
+          <p className="text-red-500 text-sm mb-2">{error}</p>
+        )}
 
         <button
           onClick={handleReset}
@@ -83,6 +78,7 @@ alert("Update Failed");
         >
           Update Password
         </button>
+
       </div>
     </div>
   );

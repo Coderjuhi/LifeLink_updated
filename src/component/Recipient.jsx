@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
     Heart,
     AlertCircle,
@@ -16,7 +16,7 @@ import {
     Activity,
     Clock,
     CheckCircle,
-    UsersRound, X
+    UsersRound, X, Check
 } from "lucide-react"
 import { FaArrowRightFromBracket } from "react-icons/fa6"
 import { useNavigate } from "react-router"
@@ -36,16 +36,87 @@ export default function RecipientDashboard({ user, setUser }) {
     const [editName, setEditName] = useState("");
     const [editAddress, setEditAddress] = useState("");
     const [sidebar, setSidebar] = useState(null);
-
+    const [emergencySent, setEmergencySent] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
+    const [responses, setResponses] = useState([]);
+    const [respondedRequests, setRespondedRequests] = useState([]);
 
-    const notifications = [
-        {
-            id: 1,
-            message: "You have 1 new message",
-            time: "Just now"
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const fetchNotifications = async () => {
+
+        try {
+
+            const res = await API.get("/notifications", {
+                withCredentials: true
+            });
+
+            setNotifications(res.data);
+
+            const unread = res.data.filter(n => !n.isRead).length;
+            setUnreadCount(unread);
+
+        } catch (err) {
+            console.error(err);
         }
-    ];
+
+    };
+    useEffect(() => {
+
+        fetchNotifications();
+
+        const interval = setInterval(() => {
+            fetchNotifications();
+        }, 8000);
+
+        return () => clearInterval(interval);
+
+    }, []);
+    const toggleNotifications = async () => {
+
+        const opening = sidebar !== "notifications";
+        setSidebar(opening ? "notifications" : null);
+
+        if (opening) {
+
+            try {
+
+                await API.put("/notifications/read", {}, {
+                    withCredentials: true
+                });
+
+                setNotifications(prev =>
+                    prev.map(n => ({
+                        ...n,
+                        isRead: true
+                    }))
+                );
+
+                setUnreadCount(0);
+
+            } catch (err) {
+                console.error(err);
+            }
+
+        }
+
+    };
+    useEffect(() => {
+        fetchResponses();
+    }, []);
+
+const fetchResponses = async () => {
+    try {
+        const res = await API.get("/notifications", {
+            withCredentials: true
+        });
+
+        setResponses(res.data || []);
+    } catch (err) {
+        console.error("Error fetching responses:", err);
+    }
+};
+
     const toggleTheme = () => {
         setDarkMode(!darkMode);
 
@@ -55,57 +126,21 @@ export default function RecipientDashboard({ user, setUser }) {
             document.documentElement.classList.remove("dark");
         }
     };
-
-    const requests = {
-        organs: [
-            {
-                type: "Kidney",
-                urgency: "Critical",
-                match: "98%",
-                center: "Transplant Center",
-                distance: "1.5 miles",
-                time: "30 min ago",
-                waiting: "2 years",
-            },
-            {
-                type: "Liver (Living)",
-                urgency: "High",
-                match: "95%",
-                center: "Medical Center",
-                distance: "3.2 miles",
-                time: "2 hours ago",
-                waiting: "8 months",
-            },
-        ],
-        blood: [
-            {
-                type: "O+",
-                urgency: "Critical",
-                hospital: "Emergency Hospital",
-                distance: "0.8 miles",
-                time: "2 min ago",
-            },
-            {
-                type: "O+",
-                urgency: "High",
-                hospital: "City Medical",
-                distance: "1.2 miles",
-                time: "15 min ago",
-            },
-        ],
-    }
-    // ACTIVE TAB SE REQUESTS
-    const activeRequestsData =
-        activeTab === "blood" ? requests.blood : requests.organs;
+    const activeRequestsData = responses.filter((r) =>
+        activeTab === "blood"
+            ? r.donorType === "Blood/Platelets"
+            : r.donorType === "Organ Transplant"
+    );
 
     // SEARCH FILTER
     const filteredRequests = activeRequestsData.filter((req) => {
         const q = searchQuery.toLowerCase();
+
         return (
-            req.type.toLowerCase().includes(q) ||
-            req.hospital?.toLowerCase().includes(q) ||
-            req.center?.toLowerCase().includes(q) ||
-            req.distance?.toLowerCase().includes(q)
+            req.donorName?.toLowerCase().includes(q) ||
+            req.donorBlood?.toLowerCase().includes(q) ||
+            req.organType?.toLowerCase().includes(q) ||
+            req.donorLocation?.toLowerCase().includes(q)
         );
     });
     const useractiveRequests = [
@@ -160,51 +195,62 @@ export default function RecipientDashboard({ user, setUser }) {
 
     const handleEmergencyRequest = async () => {
 
+        if (emergencySent) return;
+
         try {
 
-            // Step 1 → Send emergency request
-            const res1 = await API.post(
+            const res = await API.post(
                 "/emergency",
                 {
                     donorType: requestType,
                     organType: organType
-
                 },
-                {
-                    withCredentials: true
-                }
+                { withCredentials: true }
             );
 
-            alert(res1.data.message);
-
-
-            // Step 2 → Fetch matched donors
-            const res2 = await API.get(
-                "/donordata",
-                {
-                    withCredentials: true
-                }
-            );
-
-            const matches = res2.data.data || [];
-            setEmergencyResults(res2.data.data || []);
-
-            localStorage.setItem("totalMatches", matches.length);
-
-
-
-            if (!matches.length) {
-                alert("No donors found");
+            if (res.data.alreadySent) {
+                setEmergencySent(true);
+                return;
             }
 
+            setEmergencySent(true);
+
+            const res2 = await API.get("/donordata", {
+                withCredentials: true
+            });
+
+            setEmergencyResults(res2.data.data || []);
+
         } catch (err) {
-
             console.error(err);
-
-            alert(err.response?.data?.message || "Error");
-
         }
+    };
+    useEffect(() => {
+        checkExistingRequest();
+    }, []);
 
+    const checkExistingRequest = async (type = requestType, organ = organType) => {
+        try {
+
+            const res = await API.get("/my-emergency", {
+                withCredentials: true
+            });
+
+            if (!res.data.requests) {
+                setEmergencySent(false);
+                return;
+            }
+
+            const exists = res.data.requests.some((req) =>
+                req.donorType === type &&
+                (type !== "Organ Transplant" || req.organType === organ)
+            );
+
+            setEmergencySent(exists);
+
+        } catch (err) {
+            console.error(err);
+        }
     };
     const handleLogout = async () => {
         try {
@@ -257,6 +303,66 @@ export default function RecipientDashboard({ user, setUser }) {
         }
 
     };
+
+    const timeAgo = (date) => {
+        const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+
+        const intervals = {
+            year: 31536000,
+            month: 2592000,
+            day: 86400,
+            hour: 3600,
+            minute: 60
+        };
+
+        for (let key in intervals) {
+            const value = Math.floor(seconds / intervals[key]);
+            if (value >= 1) {
+                return `${value} ${key}${value > 1 ? "s" : ""} ago`;
+            }
+        }
+
+        return "Just now";
+    };
+    const [acceptedResponse, setAcceptedResponse] = useState(null);
+    const [hospitals, setHospitals] = useState([]);
+    const [showHospitalSelect, setShowHospitalSelect] = useState(false);
+
+    const acceptDonor = async (responseId) => {
+        try {
+            const res = await API.put(
+                `/accept-response/${responseId}`,
+                {},
+                { withCredentials: true }
+            );
+
+            if (res.data.success) {
+                setAcceptedResponse(res.data.data); // or res.data.response
+            }
+
+            // fetch hospitals for your city (reuse user.address logic)
+            const city = user?.address?.split(",").pop().trim() || "";
+            const resHosp = await API.get(`/hospitals?city=${encodeURIComponent(city)}`, { withCredentials: true });
+            setHospitals(resHosp.data || []);
+            setShowHospitalSelect(true);
+        } catch (err) {
+            console.error("Accept failed", err);
+        }
+    };
+
+    // select hospital for accepted response
+    const selectHospital = async (hospitalId) => {
+        try {
+            if (!acceptedResponse) return;
+            await API.put("/assign-hospital", { responseId: acceptedResponse._id, hospitalId }, { withCredentials: true });
+            // refresh responses / notifications
+            fetchResponses();
+            setShowHospitalSelect(false);
+            alert("Hospital assigned and donor will be notified.");
+        } catch (err) {
+            console.error("Assign hospital failed", err);
+        }
+    };
     return (
         <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-50 via-white to-slate-50 pt-12">            {/* Navigation */}
             <nav className="fixed top-0 left-0 w-full h-16 bg-white/95 backdrop-blur-md text-gray-900 z-50 border-b border-gray-100 shadow-sm">
@@ -278,16 +384,14 @@ export default function RecipientDashboard({ user, setUser }) {
                     {/* Right Actions */}
                     <div className="flex items-center gap-3 md:gap-4">
                         <button
-                            onClick={() =>
-                                setSidebar(sidebar === "notifications" ? null : "notifications")
-                            }
+                            onClick={toggleNotifications}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
                         >
                             <Bell size={20} className="text-gray-600" />
 
-                            {notifications.length > 0 && (
+                            {unreadCount > 0 && (
                                 <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                                    {notifications.length}
+                                    {unreadCount}
                                 </span>
                             )}
                         </button>
@@ -336,8 +440,15 @@ export default function RecipientDashboard({ user, setUser }) {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Request Type</label>
-                                    <select value={requestType} onChange={(e) => setRequestType(e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                                        <option>Blood/Platelets</option>
+                                    <select
+                                        value={requestType}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setRequestType(value);
+                                            checkExistingRequest(value, organType);
+                                        }}
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    >         <option>Blood/Platelets</option>
                                         <option>Organ Transplant</option>
                                     </select>
                                 </div>
@@ -358,8 +469,11 @@ export default function RecipientDashboard({ user, setUser }) {
 
                                             <select
                                                 value={organType}
-                                                onChange={(e) => setOrganType(e.target.value)}
-                                                className="w-full px-4 py-2 rounded-lg border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    setOrganType(value);
+                                                    checkExistingRequest(requestType, value);
+                                                }} className="w-full px-4 py-2 rounded-lg border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                                             >
                                                 <option>Kidney</option>
                                                 <option>Liver</option>
@@ -371,8 +485,16 @@ export default function RecipientDashboard({ user, setUser }) {
                                 </div>
                             </div>
 
-                            <button onClick={handleEmergencyRequest} className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors">
-                                Send Emergency Request
+                            <button
+                                onClick={handleEmergencyRequest}
+                                disabled={emergencySent}
+                                className={`w-full px-6 py-3 font-semibold rounded-lg transition-all duration-200
+${emergencySent
+                                        ? "bg-emerald-500 text-white cursor-not-allowed"
+                                        : "bg-red-600 hover:bg-red-700 text-white"}
+`}
+                            >
+                                {emergencySent ? "Emergency Sent " : "Send Emergency Request"}
                             </button>
                             {/* Nearby Donor Matches */}
                             {emergencyResults.length > 0 && (
@@ -531,8 +653,8 @@ export default function RecipientDashboard({ user, setUser }) {
                                 </button>
 
                                 <button
-                                    onClick={() => setActiveTab("organs")}
-                                    className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === "organs"
+                                    onClick={() => setActiveTab("organ")}
+                                    className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === "organ"
                                         ? "border-red-600 text-red-600"
                                         : "border-transparent text-gray-600 hover:text-gray-900"
                                         }`}
@@ -544,43 +666,77 @@ export default function RecipientDashboard({ user, setUser }) {
                             {/* Donor List */}
                             <div className="space-y-3">
                                 {filteredRequests.length > 0 ? (
-                                    filteredRequests.map((req, idx) => (
+                                    filteredRequests.map((req) => (
+
                                         <div
-                                            key={idx}
+                                            key={req._id}
                                             className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
                                         >
+
                                             <div className="flex items-center gap-4">
+
                                                 <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
                                                     <Heart className="w-5 h-5 text-red-600" />
                                                 </div>
 
                                                 <div>
+
                                                     <div className="flex items-center gap-2">
-                                                        <h3 className="font-semibold text-gray-900">{req.type}</h3>
-                                                        <span
-                                                            className={`text-xs px-2 py-1 rounded-full font-medium ${req.urgency === "Critical"
-                                                                ? "bg-red-100 text-red-700"
-                                                                : "bg-amber-100 text-amber-700"
-                                                                }`}
-                                                        >
-                                                            {req.urgency}
+                                                        <h3 className="font-semibold text-gray-900">
+                                                            {req.donorName || "Unknown Donor"}
+                                                        </h3>
+                                                        <h3 className="font-semibold text-gray-900">
+                                                            {activeTab === "blood" ? req.donorBlood : req.organType}
+                                                        </h3>
+
+                                                        <span className="text-xs px-2 py-1 rounded-full font-medium bg-red-100 text-red-700">
+                                                            Donor
                                                         </span>
+
                                                     </div>
 
                                                     <p className="text-sm text-gray-600">
-                                                        {req.hospital || req.center} • {req.distance}
+                                                        {req.donorLocation}
                                                     </p>
+
+                                                    <p className="text-sm text-gray-600">
+                                                        📞 {req.donorPhone}
+                                                    </p>
+                                                    <p className="text-xs text-green-600 font-medium mt-1">
+                                                        {timeAgo(req.createdAt)}
+                                                    </p>
+
                                                 </div>
                                             </div>
 
-                                            <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors text-sm">
-                                                Respond
-                                            </button>
+
+                                            {/* Accept / Ignore Buttons */}
+                                            <div className="flex items-center gap-2">
+
+                                                {/* Accept */}
+                                                <button
+                                                    onClick={() => acceptDonor(req._id)}
+                                                    className="w-9 h-9 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 transition"
+                                                    title="Accept"
+                                                >
+                                                    ✓
+                                                </button>
+                                                {/* Ignore */}
+                                                <button
+                                                    className="w-9 h-9 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 transition"
+                                                    title="Ignore"
+                                                >
+                                                    ✕
+                                                </button>
+
+                                            </div>
+
                                         </div>
+
                                     ))
                                 ) : (
                                     <p className="text-center text-gray-500 py-6 text-sm">
-                                        No data found
+                                        No donors responded yet
                                     </p>
                                 )}
                             </div>
@@ -790,7 +946,7 @@ ${sidebar === "notifications" ? "translate-x-0" : "translate-x-full"}`}
                     <h2 className="text-lg font-semibold">Notifications</h2>
 
                     <button
-                        onClick={() => setNotificationOpen(false)}
+                        onClick={() => setSidebar(null)}
                         className="p-1 hover:bg-gray-100 rounded"
                     >
                         <X size={22} />
@@ -802,16 +958,20 @@ ${sidebar === "notifications" ? "translate-x-0" : "translate-x-full"}`}
 
                     {notifications.map((n) => (
                         <div
-                            key={n.id}
-                            className="p-4 bg-gray-50 rounded-lg border border-gray-100"
+                            key={n._id}
+                            className={`p-4 rounded-lg border 
+${n.isRead ? "bg-gray-50" : "bg-red-50 border-red-200"}`}
                         >
+
                             <p className="text-sm font-medium text-gray-800">
-                                {n.message}
+                                {n.donorName} is willing to donate
+                                {n.donorType === "Blood/Platelets" ? " blood" : ` ${n.organType}`} at your location
                             </p>
 
-                            <p className="text-xs text-gray-500 mt-1">
-                                {n.time}
+                            <p className="text-xs text-gray-400 mt-1">
+                                {timeAgo(n.createdAt)}
                             </p>
+
                         </div>
                     ))}
 
@@ -831,7 +991,7 @@ ${sidebar === "settings" ? "translate-x-0" : "translate-x-full"}`}
                     </h2>
 
                     <button
-                        onClick={() => setSettingsOpen(false)}
+                        onClick={() => setSidebar(null)}
                         className="p-1 hover:bg-gray-100 rounded"
                     >
                         <X size={22} />
@@ -933,6 +1093,39 @@ ${sidebar === "settings" ? "translate-x-0" : "translate-x-full"}`}
 
                 </div>
 
+            )}
+
+            {/* after respond */}
+            {showHospitalSelect && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-xl w-[90%] max-w-lg">
+                        <h3 className="text-lg font-bold mb-4">Select Hospital</h3>
+
+                        {hospitals.length === 0 ? (
+                            <p>No hospitals found in your city. You can add one from Hospital Dashboard.</p>
+                        ) : (
+                            <div className="space-y-3 max-h-60 overflow-auto">
+                                {hospitals.map(h => (
+                                    <div key={h._id} className="p-3 border rounded flex justify-between items-start">
+                                        <div>
+                                            <div className="font-semibold">{h.name}</div>
+                                            <div className="text-sm text-gray-600">{h.address}</div>
+                                            <div className="text-xs text-gray-500">{h.phone}</div>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <a href={`tel:${h.phone}`} className="px-3 py-1 bg-emerald-500 text-white rounded text-sm">Call</a>
+                                            <button onClick={() => selectHospital(h._id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm">Select</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="mt-4 text-right">
+                            <button onClick={() => setShowHospitalSelect(false)} className="px-4 py-2 bg-gray-200 rounded">Close</button>
+                        </div>
+                    </div>
+                </div>
             )}
             {showHospitals && (
 

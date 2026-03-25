@@ -40,18 +40,86 @@ function DonorDashboard({ user, setUser }) {
     const [editAddress, setEditAddress] = useState("");
     const [bloodRequests, setBloodRequests] = useState([]);
     const [organRequests, setOrganRequests] = useState([]);
+    const [respondedRequests, setRespondedRequests] = useState([]);
     const navigate = useNavigate();
-    const [notificationOpen, setNotificationOpen] = useState(false);
-    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [sidebar, setSidebar] = useState(null);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [notifications, setNotifications] = useState([]);
     const [darkMode, setDarkMode] = useState(false);
+    const [acceptedData, setAcceptedData] = useState(null);
 
-    const notifications = [
-        {
-            id: 1,
-            message: "You have 1 new message",
-            time: "Just now"
+    useEffect(() => {
+        const checkAccepted = async () => {
+            try {
+                const res = await API.get("/accepted-response", {
+                    withCredentials: true
+                });
+
+                if (res.data.accepted) {
+                    setAcceptedData({ ...res.data.data });
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
+        checkAccepted(); // run only once
+
+    }, []);
+
+
+    useEffect(() => {
+
+        const fetchNotifications = async () => {
+
+            try {
+
+                const res = await API.get("/request-notifications", {
+                    withCredentials: true
+                });
+
+                setNotifications(res.data.data);
+
+
+                const unread = res.data.data.filter(n => !n.isRead).length;
+                setUnreadCount(unread);
+
+            } catch (err) {
+                console.log(err);
+            }
+
+        };
+
+        fetchNotifications();
+
+    }, []);
+    const toggleNotifications = async () => {
+
+        const opening = sidebar !== "notifications";
+
+        setSidebar(opening ? "notifications" : null);
+
+        if (opening) {
+            try {
+
+                await API.put("/request-notifications/read", {}, {
+                    withCredentials: true
+                });
+
+                setNotifications(prev =>
+                    prev.map(n => ({
+                        ...n,
+                        isRead: true
+                    }))
+                );
+
+                setUnreadCount(0);
+
+            } catch (err) {
+                console.error(err);
+            }
         }
-    ];
+    };
     const toggleTheme = () => {
         setDarkMode(!darkMode);
 
@@ -187,31 +255,7 @@ function DonorDashboard({ user, setUser }) {
         }
     };
 
-    useEffect(() => {
 
-        const fetchRequests = async () => {
-            try {
-
-                const res = await API.get("/nearby-requests", {
-                    withCredentials: true
-                });
-
-                const allRequests = res.data.data;
-
-                const blood = allRequests.filter(r => r.donorType === "Blood/Platelets");
-                const organs = allRequests.filter(r => r.donorType === "Organ Transplant");
-
-                setBloodRequests(blood);
-                setOrganRequests(organs);
-
-            } catch (err) {
-                console.log(err);
-            }
-        };
-
-        fetchRequests();
-
-    }, []);
 
     const timeAgo = (date) => {
         if (!date) return "";
@@ -236,6 +280,69 @@ function DonorDashboard({ user, setUser }) {
 
         return "Just now";
     };
+
+    const handleRespond = async (requestId, donorType) => {
+        try {
+
+            const res = await API.post(
+                "/respond",
+                {
+                    requestId,
+                    donorType
+                },
+                { withCredentials: true }
+            );
+
+            if (res.data.alreadyResponded) {
+                setRespondedRequests(prev => [...prev, requestId]);
+                return;
+            }
+
+            if (res.data.success) {
+                setRespondedRequests(prev => [...prev, requestId]);
+            }
+
+        } catch (err) {
+            console.log(err);
+        }
+    };
+    const handleHospitalRespond = async (requestId) => {
+        try {
+            const res = await API.post(
+                "/hospital-respond",
+                { requestId, action: "assigned" },
+                { withCredentials: true }
+            );
+
+            if (res.data.alreadyResponded) {
+                alert("You have already responded to this request.");
+                return;
+            }
+
+            if (res.data.success) {
+                alert("Response recorded successfully!");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to respond. Try again.");
+        }
+    };
+    useEffect(() => {
+
+        const fetchResponses = async () => {
+
+            const res = await API.get("/my-responses", {
+                withCredentials: true
+            });
+
+            const ids = res.data.data.map(r => r.requestId.toString());
+            setRespondedRequests(ids);
+
+        };
+
+        fetchResponses();
+
+    }, []);
 
     const updateProfile = async () => {
         try {
@@ -291,20 +398,21 @@ function DonorDashboard({ user, setUser }) {
                     {/* Right Actions */}
                     <div className="flex items-center gap-3 md:gap-4">
                         <button
-                            onClick={() => setNotificationOpen(prev => !prev)}
+                            onClick={toggleNotifications}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
                         >
                             <Bell size={20} className="text-gray-600" />
 
-                            {/* Notification count */}
-                            {notifications.length > 0 && (
-                                <span className="absolute -top-1 -right-1 text-[10px] bg-red-600 text-white px-1.5 py-[1px] rounded-full font-semibold">
-                                    {notifications.length}
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                                    {unreadCount}
                                 </span>
                             )}
                         </button>
                         <button
-                            onClick={() => setSettingsOpen(prev => !prev)}
+                            onClick={() =>
+                                setSidebar(sidebar === "settings" ? null : "settings")
+                            }
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                         >
                             <Settings size={20} className="text-gray-600" />
@@ -436,9 +544,10 @@ function DonorDashboard({ user, setUser }) {
                                                 <div className="flex-1">
 
                                                     <div className="flex items-center gap-2 mb-1">
-
                                                         <h3 className="font-semibold text-gray-900">
-                                                            {activeTab === "blood" ? req.bloodGrp : req.organType}
+                                                            {activeTab === "blood"
+                                                                ? req.bloodGrp
+                                                                : `${req.organType} (${req.bloodGrp || "Any Blood Group"})`}
                                                         </h3>
 
                                                         <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-500 text-white">
@@ -452,7 +561,7 @@ function DonorDashboard({ user, setUser }) {
                                                     </p>
 
                                                     <p className="text-xs text-gray-500 mt-1">
-                                                        Recipient: {req.sessionId?.name}
+                                                        {req.ownerType === "hospital" ? "Hospital" : "Recipient"}: {req.sessionId?.name}
                                                     </p>
 
                                                     {/* Live Time */}
@@ -464,11 +573,36 @@ function DonorDashboard({ user, setUser }) {
 
                                             </div>
 
-                                            <button
-                                                className="ml-4 px-4 py-2 rounded-lg font-semibold text-white transition-all text-sm group-hover:scale-105 bg-red-600 hover:bg-red-700"
-                                            >
-                                                Respond
-                                            </button>
+                                            {respondedRequests.includes(req._id.toString()) ? (
+
+                                                <button
+                                                    disabled
+                                                    className="ml-4 px-4 py-2 rounded-lg font-semibold text-white text-sm bg-green-500 cursor-not-allowed"
+                                                >
+                                                    Responded
+                                                </button>
+
+                                            ) :
+
+
+                                                user.accountType === "donor" ? (
+                                                    <button
+                                                        onClick={() => handleRespond(req._id, req.donorType)}
+                                                        className="ml-4 px-4 py-2 rounded-lg font-semibold text-white text-sm bg-red-600 hover:bg-red-700"
+                                                    >
+                                                        Respond
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleHospitalRespond(req._id)}
+                                                        className="ml-4 px-4 py-2 rounded-lg font-semibold text-white text-sm bg-blue-600 hover:bg-blue-700"
+                                                    >
+                                                        Respond
+                                                    </button>
+                                                )
+                                            }
+
+
 
                                         </div>
 
@@ -743,7 +877,7 @@ function DonorDashboard({ user, setUser }) {
             {/* Notification Sidebar */}
             <div
                 className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 
-  ${notificationOpen ? "translate-x-0" : "translate-x-full"}`}
+${sidebar === "notifications" ? "translate-x-0" : "translate-x-full"}`}
             >
 
                 {/* Header */}
@@ -751,7 +885,7 @@ function DonorDashboard({ user, setUser }) {
                     <h2 className="text-lg font-semibold">Notifications</h2>
 
                     <button
-                        onClick={() => setNotificationOpen(false)}
+                        onClick={() => setSidebar(null)}
                         className="p-1 hover:bg-gray-100 rounded"
                     >
                         <X size={22} />
@@ -761,19 +895,30 @@ function DonorDashboard({ user, setUser }) {
                 {/* Notification List */}
                 <div className="p-4 space-y-3">
 
+
                     {notifications.map((n) => (
                         <div
-                            key={n.id}
-                            className="p-4 bg-gray-50 rounded-lg border border-gray-100"
+                            key={n._id}
+                            className={`p-4 rounded-lg border 
+${n.isRead ? "bg-gray-50" : "bg-red-50 border-red-200"}`}
                         >
-                            <p className="text-sm font-medium text-gray-800">
-                                {n.message}
+
+                            <p className="text-sm font-semibold text-gray-800">
+                                {n.ownerType === "hospital" ? "Hospital" : "Recipient"} is requesting for{" "}
+
+                                {n.donorType === "Blood/Platelets" && `${n.bloodGrp} blood `}
+
+                                {n.donorType === "Organ Transplant" && `${n.organType} transplant `}
+
+                                at your location
                             </p>
 
-                            <p className="text-xs text-gray-500 mt-1">
-                                {n.time}
+                            <p className="text-xs text-green-600 mt-1">
+                                {timeAgo(n.createdAt)}
                             </p>
+
                         </div>
+
                     ))}
 
                 </div>
@@ -781,9 +926,8 @@ function DonorDashboard({ user, setUser }) {
             {/* Settings Sidebar */}
             <div
                 className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 
-    ${settingsOpen ? "translate-x-0" : "translate-x-full"}`}
+${sidebar === "settings" ? "translate-x-0" : "translate-x-full"}`}
             >
-
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
                     <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -791,7 +935,7 @@ function DonorDashboard({ user, setUser }) {
                     </h2>
 
                     <button
-                        onClick={() => setSettingsOpen(false)}
+                        onClick={() => setSidebar(null)}
                         className="p-1 hover:bg-gray-100 rounded"
                     >
                         <X size={22} />
@@ -837,6 +981,73 @@ function DonorDashboard({ user, setUser }) {
                 </div>
 
             </div>
+            {/* ACCEPTED POPUP (VERY IMPORTANT) */}
+            {acceptedData && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+                    <div className="bg-white p-6 rounded-xl w-[90%] max-w-md shadow-xl">
+
+                        <h2 className="text-xl font-bold text-green-600 mb-2">
+                            🎉 You were selected!
+                        </h2>
+
+                        <p className="text-gray-700 mb-4">
+                            Recipient accepted your response.
+                        </p>
+
+                        {/* Hospital Info */}
+                        {acceptedData.hospitalId ? (
+                            <div className="p-3 border rounded mb-4">
+                                <p className="font-semibold text-gray-900">
+                                    {acceptedData.hospitalId.name}
+                                </p>
+
+                                <p className="text-sm text-gray-600">
+                                    {acceptedData.hospitalId.address}
+                                </p>
+
+                                <p className="text-xs text-gray-500">
+                                    {acceptedData.hospitalId.phone}
+                                </p>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-gray-500 mb-4">
+                                Waiting for hospital assignment...
+                            </p>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+
+                            {acceptedData.hospitalId && (
+                                <>
+                                    <a
+                                        href={`tel:${acceptedData.hospitalId.phone}`}
+                                        className="flex-1 text-center bg-emerald-600 text-white py-2 rounded"
+                                    >
+                                        Call
+                                    </a>
+
+                                    <a
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        href={`https://www.google.com/maps?q=${acceptedData.hospitalId.lat},${acceptedData.hospitalId.lng}`}
+                                        className="flex-1 text-center border py-2 rounded"
+                                    >
+                                        Navigate
+                                    </a>
+                                </>
+                            )}
+
+                            <button
+                                onClick={() => setAcceptedData(null)}
+                                className="px-4 py-2 bg-gray-200 rounded"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     )
 }
